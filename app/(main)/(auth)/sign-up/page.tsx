@@ -76,10 +76,10 @@ const SignUp = () => {
           <h1 className="text-lg font-semibold text-gray-700 ml-2">Back to Home</h1>
         </div>
         <CardHeader>
-          <CardTitle className="text-center text-2xl font-bold text-gray-800"> Create a Healthcare Account
+          <CardTitle className="text-center text-2xl font-bold text-gray-800"> Create a Chronix Account
           </CardTitle>
           <CardDescription className="text-sm text-center text-gray-600">
-          Secure and trusted account creation for the Healthcare Portal
+          Secure and trusted account creation for the Chronix Portal
           </CardDescription>
         </CardHeader>
         {!!error && (

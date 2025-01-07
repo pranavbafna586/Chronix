@@ -19,7 +19,7 @@ const Features = () => {
         <div className="space-y-4">
           <h2 className="text-3xl md:text-4xl font-bold">Key Features</h2>
           <p className="text-muted-foreground text-lg md:text-xl">
-            Explore the powerful features that elevate your healthcare experience.
+            Explore the powerful features that elevate your Chronix experience.
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
@@ -39,7 +39,7 @@ const Features = () => {
               Book Appointment
             </h3>
             <p className="text-muted-foreground group-hover:text-primary-foreground">
-              Schedule appointments with healthcare professionals with ease, directly through the platform.
+              Schedule appointments with Chronix professionals with ease, directly through the platform.
             </p>
           </div>
           </Link>

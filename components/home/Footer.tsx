@@ -6,7 +6,7 @@ const Footer = () => {
     <footer className="w-full bg-background py-6 border-t">
       <div className="container px-4 md:px-6 flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          &copy; 2024 HealthCare. All rights reserved.
+          &copy; 2024 Chronix. All rights reserved.
         </div>
         <nav className="flex gap-4 sm:gap-6">
           <Link

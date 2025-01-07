@@ -19,7 +19,7 @@ export default function ThreeDCard() {
           translateZ="60"
           className="text-white text-sm max-w-sm mt-2 dark:text-neutral-300"
         >
-          Hover over this card to unlock the power of innovative healthcare perspectives
+          Hover over this card to unlock the power of innovative Chronix perspectives
         </CardItem>
         <CardItem translateZ="100" className="w-full mt-4">
           <Image

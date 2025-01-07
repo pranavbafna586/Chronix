@@ -6,7 +6,7 @@ import { Sidebar } from "@/components/Sidebar"
 import { contentComponents, type ContentKey } from "@/components/content"
 
 export default function Home() {
-  const [activeContent, setActiveContent] = useState<ContentKey>("dashboard")
+  const [activeContent, setActiveContent] = useState<ContentKey>("home")
   const ContentComponent = contentComponents[activeContent]
 
   return (

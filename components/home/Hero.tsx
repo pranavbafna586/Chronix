@@ -10,7 +10,7 @@ const Hero = () => {
     {/* Left Content */}
     <div className="space-y-4 md:w-1/2">
       <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white">
-        Your Trusted Partner in Healthcare Solutions
+        Your Trusted Partner in Chronix Solutions
       </h1>
       <p className="text-xl text-white/80">
         Explore innovative tools to streamline patient care, enhance medical

@@ -74,7 +74,7 @@ const SignIn = () => {
             Welcome Back
           </CardTitle>
           <CardDescription className="text-sm text-center text-gray-600">
-            Secure access to your Healthcare Portal account
+            Secure access to your Chronix Portal account
           </CardDescription>
         </CardHeader>
         {!!error && (

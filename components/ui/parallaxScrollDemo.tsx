@@ -4,19 +4,19 @@ const tweets = [
   {
     username: "Dr. John Doe",
     handle: "drjohndoe",
-    content: "Certigo made generating medical certificates effortless and efficient. Highly recommended for healthcare professionals!",
+    content: "Certigo made generating medical certificates effortless and efficient. Highly recommended for Chronix professionals!",
     avatar: "https://i.pravatar.cc/150?img=1",
   },
   {
     username: "Nurse Jane Smith",
     handle: "nursejanesmith",
-    content: "The health badge creation with Certigo is smooth and user-friendly. Ideal for healthcare workers!",
+    content: "The health badge creation with Certigo is smooth and user-friendly. Ideal for Chronix workers!",
     avatar: "https://i.pravatar.cc/150?img=2",
   },
   {
     username: "Dr. Bob Johnson",
     handle: "drbobjohnson",
-    content: "Certigo simplifies the process of generating medical credentials. A great tool for healthcare institutions.",
+    content: "Certigo simplifies the process of generating medical credentials. A great tool for Chronix institutions.",
     avatar: "https://i.pravatar.cc/150?img=3",
   },
   {
@@ -38,8 +38,8 @@ const tweets = [
     avatar: "https://i.pravatar.cc/150?img=6",
   },
   {
-    username: "Frank Martin, Healthcare Admin",
-    handle: "frankmartinhealthcare",
+    username: "Frank Martin, Chronix Admin",
+    handle: "frankmartinChronix",
     content: "Certigo's support team is exceptional. Medical certificate generation has never been easier!",
     avatar: "https://i.pravatar.cc/150?img=7",
   },

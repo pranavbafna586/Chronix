@@ -1,113 +1,208 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Calendar, MapPin, Clock, Award, Search, X, CheckCircle2 } from 'lucide-react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar as CalendarComponent } from "@/components/ui/calendar"
-import { Card, CardContent } from "@/components/ui/card"
-import { cn } from "@/lib/utils"
+import React, { useState, useEffect } from "react";
+import {
+  Calendar,
+  MapPin,
+  Clock,
+  Award,
+  Search,
+  X,
+  CheckCircle2,
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 const specializations = [
-  { id: 'cardiology', name: 'Cardiology', icon: '❤️' },
-  { id: 'neurology', name: 'Neurology', icon: '🧠' },
-  { id: 'pediatrics', name: 'Pediatrics', icon: '👶' },
-  { id: 'orthopedics', name: 'Orthopedics', icon: '🦴' },
-  { id: 'dermatology', name: 'Dermatology', icon: '🧴' },
-]
+  { id: "cardiology", name: "Cardiology", icon: "❤️" },
+  { id: "neurology", name: "Neurology", icon: "🧠" },
+  { id: "pediatrics", name: "Pediatrics", icon: "👶" },
+  { id: "orthopedics", name: "Orthopedics", icon: "🦴" },
+  { id: "dermatology", name: "Dermatology", icon: "🧴" },
+];
 
 const allDoctors = [
-  { id: 'dr-smith', name: 'Dr. Smith', specialization: 'Cardiology', rating: 4.8, experience: '15 years', city: 'New York', language: 'English', gender: 'Male' },
-  { id: 'dr-johnson', name: 'Dr. Johnson', specialization: 'Neurology', rating: 4.9, experience: '20 years', city: 'Los Angeles', language: 'Spanish', gender: 'Female' },
-  { id: 'dr-williams', name: 'Dr. Williams', specialization: 'Pediatrics', rating: 4.7, experience: '10 years', city: 'Chicago', language: 'English', gender: 'Male' },
-  { id: 'dr-brown', name: 'Dr. Brown', specialization: 'Orthopedics', rating: 4.6, experience: '12 years', city: 'New York', language: 'Mandarin', gender: 'Female' },
-  { id: 'dr-davis', name: 'Dr. Davis', specialization: 'Dermatology', rating: 4.5, experience: '8 years', city: 'Los Angeles', language: 'English', gender: 'Male' },
-  { id: 'dr-miller', name: 'Dr. Miller', specialization: 'Cardiology', rating: 4.7, experience: '18 years', city: 'Chicago', language: 'Spanish', gender: 'Female' },
-]
+  {
+    id: "dr-smith",
+    name: "Dr. Smith",
+    specialization: "Cardiology",
+    rating: 4.8,
+    experience: "15 years",
+    city: "New York",
+    language: "English",
+    gender: "Male",
+  },
+  {
+    id: "dr-johnson",
+    name: "Dr. Johnson",
+    specialization: "Neurology",
+    rating: 4.9,
+    experience: "20 years",
+    city: "Los Angeles",
+    language: "Spanish",
+    gender: "Female",
+  },
+  {
+    id: "dr-williams",
+    name: "Dr. Williams",
+    specialization: "Pediatrics",
+    rating: 4.7,
+    experience: "10 years",
+    city: "Chicago",
+    language: "English",
+    gender: "Male",
+  },
+  {
+    id: "dr-brown",
+    name: "Dr. Brown",
+    specialization: "Orthopedics",
+    rating: 4.6,
+    experience: "12 years",
+    city: "New York",
+    language: "Mandarin",
+    gender: "Female",
+  },
+  {
+    id: "dr-davis",
+    name: "Dr. Davis",
+    specialization: "Dermatology",
+    rating: 4.5,
+    experience: "8 years",
+    city: "Los Angeles",
+    language: "English",
+    gender: "Male",
+  },
+  {
+    id: "dr-miller",
+    name: "Dr. Miller",
+    specialization: "Cardiology",
+    rating: 4.7,
+    experience: "18 years",
+    city: "Chicago",
+    language: "Spanish",
+    gender: "Female",
+  },
+];
 
 const timeSlots = [
-  '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
-  '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM',
-]
+  "09:00 AM",
+  "09:30 AM",
+  "10:00 AM",
+  "10:30 AM",
+  "11:00 AM",
+  "11:30 AM",
+  "02:00 PM",
+  "02:30 PM",
+  "03:00 PM",
+  "03:30 PM",
+  "04:00 PM",
+  "04:30 PM",
+];
 
 export const AppointmentsContent = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [currentStep, setCurrentStep] = useState(1)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
   const [filters, setFilters] = useState({
-    city: '',
-    specialty: '',
-    language: '',
-    gender: '',
-  })
-  const [searchTerm, setSearchTerm] = useState('')
-  const [filteredDoctors, setFilteredDoctors] = useState(allDoctors)
-  const [selectedSpecialization, setSelectedSpecialization] = useState('')
-  const [selectedDoctor, setSelectedDoctor] = useState('')
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState('')
-  const [isBookingComplete, setIsBookingComplete] = useState(false)
+    city: "",
+    specialty: "",
+    language: "",
+    gender: "",
+  });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredDoctors, setFilteredDoctors] = useState(allDoctors);
+  const [selectedSpecialization, setSelectedSpecialization] = useState("");
+  const [selectedDoctor, setSelectedDoctor] = useState("");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState("");
+  const [isBookingComplete, setIsBookingComplete] = useState(false);
 
   useEffect(() => {
-    const filtered = allDoctors.filter(doctor => {
-      const matchesSearch = doctor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            doctor.specialization.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesCity = filters.city === '' || doctor.city === filters.city
-      const matchesSpecialty = filters.specialty === '' || doctor.specialization === filters.specialty
-      const matchesLanguage = filters.language === '' || doctor.language === filters.language
-      const matchesGender = filters.gender === '' || doctor.gender === filters.gender
+    const filtered = allDoctors.filter((doctor) => {
+      const matchesSearch =
+        doctor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        doctor.specialization.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCity = filters.city === "" || doctor.city === filters.city;
+      const matchesSpecialty =
+        filters.specialty === "" || doctor.specialization === filters.specialty;
+      const matchesLanguage =
+        filters.language === "" || doctor.language === filters.language;
+      const matchesGender =
+        filters.gender === "" || doctor.gender === filters.gender;
 
-      return matchesSearch && matchesCity && matchesSpecialty && matchesLanguage && matchesGender
-    })
-    setFilteredDoctors(filtered)
-  }, [searchTerm, filters])
+      return (
+        matchesSearch &&
+        matchesCity &&
+        matchesSpecialty &&
+        matchesLanguage &&
+        matchesGender
+      );
+    });
+    setFilteredDoctors(filtered);
+  }, [searchTerm, filters]);
 
   const clearFilters = () => {
     setFilters({
-      city: '',
-      specialty: '',
-      language: '',
-      gender: '',
-    })
-    setSearchTerm('')
-  }
+      city: "",
+      specialty: "",
+      language: "",
+      gender: "",
+    });
+    setSearchTerm("");
+  };
 
   const openModal = (doctorId: string) => {
-    setIsModalOpen(true)
-    setCurrentStep(1)
-    setSelectedDoctor(doctorId)
-    const doctor = allDoctors.find(d => d.id === doctorId)
+    setIsModalOpen(true);
+    setCurrentStep(1);
+    setSelectedDoctor(doctorId);
+    const doctor = allDoctors.find((d) => d.id === doctorId);
     if (doctor) {
-      setSelectedSpecialization(doctor.specialization.toLowerCase())
+      setSelectedSpecialization(doctor.specialization.toLowerCase());
     }
-    setSelectedDate(undefined)
-    setSelectedTimeSlot('')
-    setIsBookingComplete(false)
-  }
+    setSelectedDate(undefined);
+    setSelectedTimeSlot("");
+    setIsBookingComplete(false);
+  };
 
   const closeModal = () => {
-    setIsModalOpen(false)
-    setCurrentStep(1)
-  }
+    setIsModalOpen(false);
+    setCurrentStep(1);
+  };
 
   const nextStep = () => {
-    setCurrentStep((prev) => Math.min(prev + 1, 4))
-  }
+    setCurrentStep((prev) => Math.min(prev + 1, 4));
+  };
 
   const prevStep = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 1))
-  }
+    setCurrentStep((prev) => Math.max(prev - 1, 1));
+  };
 
   const confirmAppointment = () => {
-    setIsBookingComplete(true)
+    setIsBookingComplete(true);
     // Here you would typically send the booking data to your backend
-  }
+  };
 
   return (
     <div className="space-y-6 px-4 py-8 max-w-7xl mx-auto">
       <h2 className="text-3xl font-bold text-gray-800 mb-8">My Appointments</h2>
-      
+
       {/* Search and Filters */}
       <div className="space-y-4 mb-8">
         <Input
@@ -118,7 +213,12 @@ export const AppointmentsContent = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
         <div className="flex flex-wrap gap-4">
-            <Select value={filters.city} onValueChange={(value: string) => setFilters({ ...filters, city: value })}>
+          <Select
+            value={filters.city}
+            onValueChange={(value: string) =>
+              setFilters({ ...filters, city: value })
+            }
+          >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="City" />
             </SelectTrigger>
@@ -127,18 +227,30 @@ export const AppointmentsContent = () => {
               <SelectItem value="Los Angeles">Los Angeles</SelectItem>
               <SelectItem value="Chicago">Chicago</SelectItem>
             </SelectContent>
-            </Select>
-          <Select value={filters.specialty} onValueChange={(value: any) => setFilters({ ...filters, specialty: value })}>
+          </Select>
+          <Select
+            value={filters.specialty}
+            onValueChange={(value: any) =>
+              setFilters({ ...filters, specialty: value })
+            }
+          >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Specialty" />
             </SelectTrigger>
             <SelectContent>
               {specializations.map((spec) => (
-                <SelectItem key={spec.id} value={spec.name}>{spec.name}</SelectItem>
+                <SelectItem key={spec.id} value={spec.name}>
+                  {spec.name}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Select value={filters.language} onValueChange={(value: any) => setFilters({ ...filters, language: value })}>
+          <Select
+            value={filters.language}
+            onValueChange={(value: any) =>
+              setFilters({ ...filters, language: value })
+            }
+          >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Language" />
             </SelectTrigger>
@@ -148,7 +260,12 @@ export const AppointmentsContent = () => {
               <SelectItem value="Mandarin">Mandarin</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={filters.gender} onValueChange={(value: any) => setFilters({ ...filters, gender: value })}>
+          <Select
+            value={filters.gender}
+            onValueChange={(value: any) =>
+              setFilters({ ...filters, gender: value })
+            }
+          >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Gender" />
             </SelectTrigger>
@@ -167,13 +284,16 @@ export const AppointmentsContent = () => {
       {/* Appointment Cards */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredDoctors.map((doctor) => (
-          <div key={doctor.id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 ease-in-out">
+          <div
+            key={doctor.id}
+            className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 ease-in-out"
+          >
             <div className="p-6">
               <div className="flex items-center mb-4">
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mr-4">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-8 w-8 text-blue-600"
+                    className="h-8 w-8 text-"
                     fill="currentColor"
                     viewBox="0 0 24 24"
                   >
@@ -181,8 +301,12 @@ export const AppointmentsContent = () => {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-xl text-gray-800">{doctor.name}</h3>
-                  <p className="text-blue-600 font-medium">{doctor.specialization}</p>
+                  <h3 className="font-semibold text-xl text-gray-800">
+                    {doctor.name}
+                  </h3>
+                  <p className="text-blue-600 font-medium">
+                    {doctor.specialization}
+                  </p>
                 </div>
               </div>
               <div className="space-y-2 mb-4">
@@ -222,44 +346,81 @@ export const AppointmentsContent = () => {
           </DialogHeader>
           <div className="mt-4">
             {/* Step indicators */}
-            <div className="flex justify-between mb-8">
-              {[1, 2, 3, 4].map((step) => (
-                <div
-                  key={step}
-                  className={cn(
-                    "flex items-center justify-center w-8 h-8 rounded-full border-2",
-                    currentStep >= step
-                      ? "border-blue-600 bg-blue-600 text-white"
-                      : "border-gray-300 text-gray-300"
+            <div className="flex items-center justify-between mb-8">
+              {[1, 2, 3, 4].map((step, index) => (
+                <React.Fragment key={step}>
+                  {/* Step Indicator */}
+                  <div
+                    className={cn(
+                      "flex items-center justify-center w-8 h-8 rounded-full border-2 text-sm font-semibold",
+                      currentStep >= step
+                        ? "border-blue-600 bg-blue-600 text-white"
+                        : "border-gray-300 text-gray-500"
+                    )}
+                  >
+                    {step}
+                  </div>
+
+                  {/* Dotted Line */}
+                  {index < 3 && (
+                    <div
+                      className="flex-1 h-1 border-dotted border-t-2"
+                      style={{
+                        borderColor: currentStep > step ? "#2563EB" : "#D1D5DB", // Dynamic color for the line
+                      }}
+                    ></div>
                   )}
-                >
-                  {step}
-                </div>
+                </React.Fragment>
               ))}
             </div>
 
             {/* Step content */}
             {currentStep === 1 && (
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Confirm Doctor and Specialization</h3>
+                <h3 className="text-lg font-semibold">
+                  Confirm Doctor and Specialization
+                </h3>
                 <Card>
-                  <CardContent className="p-4">
-                    <p><strong>Doctor:</strong> {allDoctors.find(d => d.id === selectedDoctor)?.name}</p>
-                    <p><strong>Specialization:</strong> {allDoctors.find(d => d.id === selectedDoctor)?.specialization}</p>
+                  <CardContent className="p-4 space-y-2">
+                    <p>
+                      <strong>Doctor:</strong>{" "}
+                      {allDoctors.find((d) => d.id === selectedDoctor)?.name}
+                    </p>
+                    <p>
+                      <strong>Choose Specialization:</strong>
+                    </p>
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+                      {specializations.map((spec) => (
+                        <button
+                          key={spec.id}
+                          className={`p-4 border rounded-md flex items-center justify-center space-x-2 ${
+                            selectedSpecialization === spec.id
+                              ? "bg-blue-100 border-blue-600"
+                              : "bg-white border-gray-300"
+                          }`}
+                          onClick={() => setSelectedSpecialization(spec.id)}
+                        >
+                          <span>{spec.icon}</span>
+                          <span>{spec.name}</span>
+                        </button>
+                      ))}
+                    </div>
                   </CardContent>
                 </Card>
               </div>
             )}
 
             {currentStep === 2 && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Select Date</h3>
-                <CalendarComponent
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  className="rounded-md border"
-                />
+              <div className="flex items-center justify-center min-h-[50vh]">
+                <div className="space-y-4 text-center">
+                  <h3 className="text-lg font-semibold">Select Date</h3>
+                  <CalendarComponent
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    className="rounded-md border mx-auto"
+                  />
+                </div>
               </div>
             )}
 
@@ -273,7 +434,8 @@ export const AppointmentsContent = () => {
                       variant="outline"
                       className={cn(
                         "text-sm",
-                        selectedTimeSlot === slot && "bg-blue-100 border-blue-600"
+                        selectedTimeSlot === slot &&
+                          "bg-blue-100 border-blue-600"
                       )}
                       onClick={() => setSelectedTimeSlot(slot)}
                     >
@@ -289,10 +451,23 @@ export const AppointmentsContent = () => {
                 <h3 className="text-lg font-semibold">Confirm Details</h3>
                 <Card>
                   <CardContent className="p-4">
-                    <p><strong>Doctor:</strong> {allDoctors.find(d => d.id === selectedDoctor)?.name}</p>
-                    <p><strong>Specialization:</strong> {allDoctors.find(d => d.id === selectedDoctor)?.specialization}</p>
-                    <p><strong>Date:</strong> {selectedDate?.toDateString()}</p>
-                    <p><strong>Time:</strong> {selectedTimeSlot}</p>
+                    <p>
+                      <strong>Doctor:</strong>{" "}
+                      {allDoctors.find((d) => d.id === selectedDoctor)?.name}
+                    </p>
+                    <p>
+                      <strong>Specialization:</strong>{" "}
+                      {
+                        allDoctors.find((d) => d.id === selectedDoctor)
+                          ?.specialization
+                      }
+                    </p>
+                    <p>
+                      <strong>Date:</strong> {selectedDate?.toDateString()}
+                    </p>
+                    <p>
+                      <strong>Time:</strong> {selectedTimeSlot}
+                    </p>
                   </CardContent>
                 </Card>
               </div>
@@ -305,10 +480,13 @@ export const AppointmentsContent = () => {
               </Button>
             )}
             {currentStep < 4 ? (
-              <Button onClick={nextStep} disabled={
-                (currentStep === 2 && !selectedDate) ||
-                (currentStep === 3 && !selectedTimeSlot)
-              }>
+              <Button
+                onClick={nextStep}
+                disabled={
+                  (currentStep === 2 && !selectedDate) ||
+                  (currentStep === 3 && !selectedTimeSlot)
+                }
+              >
                 Next
               </Button>
             ) : (
@@ -334,18 +512,19 @@ export const AppointmentsContent = () => {
             </p>
           </div>
           <DialogFooter>
-            <Button onClick={() => {
-              setIsBookingComplete(false)
-              closeModal()
-            }}>
+            <Button
+              onClick={() => {
+                setIsBookingComplete(false);
+                closeModal();
+              }}
+            >
               Close
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
-  )
-}
+  );
+};
 
 export default AppointmentsContent;
-

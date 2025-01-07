@@ -14,8 +14,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Healthcare",
-  description: "A Healthcare Management System",  
+  title: "Chronix",
+  description: "A Chronix Management System",  
 };
 
 export default function RootLayout({
