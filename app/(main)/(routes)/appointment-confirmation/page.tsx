@@ -17,7 +17,7 @@ const AppointmentConfirmation: React.FC = () => {
           <img
             src="/success.gif" 
             alt="Success"
-            className="mx-auto w-40 h-30"
+            className="mx-auto w-50 h-30"
           />
         </div>
         <h1 className="text-2xl font-bold mb-4 text-primary">

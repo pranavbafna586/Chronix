@@ -13,7 +13,7 @@ import { LayoutDashboard as Dashboard } from "lucide-react"; // Import the Dashb
 type IconName = keyof typeof Icons;
 
 const NavItems = [
-  { title: "Home", href: "#templates", icon: "Template" },
+  { title: "Home", href: "/home", icon: "Template" },
   { title: "Features", href: "#features", icon: "Feature" },
   { title: "Guide", href: "#guide", icon: "Book" },
   { title: "Pricing", href: "#pricing", icon: "Dollar" },

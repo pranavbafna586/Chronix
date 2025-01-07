@@ -34,8 +34,7 @@ export default function ThreeDCard() {
           <CardItem
             translateZ={20}
             as={Link}
-            href=""
-            target="__blank"
+            href="/appointment"
             className="px-4 py-2 rounded-xl text-s text-white font-normal dark:text-white"
           >
             Book now →

@@ -40,7 +40,7 @@ const SignIn = () => {
       password,
     });
     if (res?.ok) {
-      router.push("/dashboard"); // Redirect to the dashboard after successful login
+      router.push("/home"); // Redirect to the dashboard after successful login
       toast.success("Login successful");
     } else if (res?.status === 401) {
       setError("Invalid Credentials");
