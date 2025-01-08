@@ -15,6 +15,5 @@ export function DoctorsContent() {
         ))}
       </div>
     </div>
-  )
+  );
 }
-

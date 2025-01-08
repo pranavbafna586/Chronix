@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,61 +9,69 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 interface CreateReportModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSave: (data: ReportData) => void
-  initialData?: ReportData
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (data: ReportData) => void;
+  initialData?: ReportData;
 }
 
 export interface ReportData {
-  id?: string
-  title: string
-  filename: string
-  description: string
-  file?: File
-  imageUrl?: string
+  id?: string;
+  title: string;
+  filename: string;
+  description: string;
+  file?: File;
+  imageUrl?: string;
 }
 
-export function CreateReportModal({ isOpen, onClose, onSave, initialData }: CreateReportModalProps) {
+export function CreateReportModal({
+  isOpen,
+  onClose,
+  onSave,
+  initialData,
+}: CreateReportModalProps) {
   const [formData, setFormData] = useState<ReportData>(
     initialData || {
       title: "",
       filename: "",
       description: "",
     }
-  )
+  );
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      const imageUrl = URL.createObjectURL(file)
-      setFormData({ ...formData, file, imageUrl, filename: file.name })
+      const imageUrl = URL.createObjectURL(file);
+      setFormData({ ...formData, file, imageUrl, filename: file.name });
     }
-  }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     onSave({
       ...formData,
       id: initialData?.id || Date.now().toString(),
-    })
-    onClose()
-  }
+    });
+    onClose();
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>{initialData ? "Edit Report" : "Create New Report"}</DialogTitle>
+            <DialogTitle>
+              {initialData ? "Edit Report" : "Create New Report"}
+            </DialogTitle>
             <DialogDescription>
-              Fill in the details below to {initialData ? "update the" : "create a new"} report.
+              Fill in the details below to{" "}
+              {initialData ? "update the" : "create a new"} report.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -72,7 +80,9 @@ export function CreateReportModal({ isOpen, onClose, onSave, initialData }: Crea
               <Input
                 id="title"
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
                 required
               />
             </div>
@@ -91,7 +101,9 @@ export function CreateReportModal({ isOpen, onClose, onSave, initialData }: Crea
               <Input
                 id="filename"
                 value={formData.filename}
-                onChange={(e) => setFormData({ ...formData, filename: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, filename: e.target.value })
+                }
                 required
               />
             </div>
@@ -100,7 +112,9 @@ export function CreateReportModal({ isOpen, onClose, onSave, initialData }: Crea
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
                 required
               />
             </div>
@@ -114,6 +128,5 @@ export function CreateReportModal({ isOpen, onClose, onSave, initialData }: Crea
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

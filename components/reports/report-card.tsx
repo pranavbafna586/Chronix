@@ -1,25 +1,30 @@
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Pencil, Trash2 } from 'lucide-react'
-import type { ReportData } from "./create-report-modal"
+} from "@/components/ui/card";
+import { Pencil, Trash2 } from "lucide-react";
+import type { ReportData } from "./create-report-modal";
 
 interface ReportCardProps {
-  report: ReportData
-  onEdit: (report: ReportData) => void
-  onDelete: (reportId: string) => void
-  onClick: (report: ReportData) => void
+  report: ReportData;
+  onEdit: (report: ReportData) => void;
+  onDelete: (reportId: string) => void;
+  onClick: (report: ReportData) => void;
 }
 
-export function ReportCard({ report, onEdit, onDelete, onClick }: ReportCardProps) {
+export function ReportCard({
+  report,
+  onEdit,
+  onDelete,
+  onClick,
+}: ReportCardProps) {
   return (
-    <Card 
+    <Card
       className="relative cursor-pointer hover:shadow-md transition-shadow aspect-square flex flex-col"
       onClick={() => onClick(report)}
     >
@@ -29,8 +34,8 @@ export function ReportCard({ report, onEdit, onDelete, onClick }: ReportCardProp
           variant="ghost"
           className="h-8 w-8"
           onClick={(e) => {
-            e.stopPropagation()
-            onEdit(report)
+            e.stopPropagation();
+            onEdit(report);
           }}
         >
           <Pencil className="h-4 w-4" />
@@ -40,8 +45,8 @@ export function ReportCard({ report, onEdit, onDelete, onClick }: ReportCardProp
           variant="ghost"
           className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-100"
           onClick={(e) => {
-            e.stopPropagation()
-            onDelete(report.id!)
+            e.stopPropagation();
+            onDelete(report.id!);
           }}
         >
           <Trash2 className="h-4 w-4" />
@@ -49,7 +54,9 @@ export function ReportCard({ report, onEdit, onDelete, onClick }: ReportCardProp
       </div>
       <CardHeader className="flex-shrink-0">
         <CardTitle className="text-lg line-clamp-1">{report.title}</CardTitle>
-        <CardDescription className="line-clamp-1">{report.filename}</CardDescription>
+        <CardDescription className="line-clamp-1">
+          {report.filename}
+        </CardDescription>
       </CardHeader>
       <CardContent className="flex-grow flex flex-col">
         <div className="relative flex-grow mb-2">
@@ -61,9 +68,10 @@ export function ReportCard({ report, onEdit, onDelete, onClick }: ReportCardProp
             className="rounded-md"
           />
         </div>
-        <p className="text-sm text-muted-foreground line-clamp-2">{report.description}</p>
+        <p className="text-sm text-muted-foreground line-clamp-2">
+          {report.description}
+        </p>
       </CardContent>
     </Card>
-  )
+  );
 }
-
