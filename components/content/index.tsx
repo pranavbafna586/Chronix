@@ -5,7 +5,8 @@ import { DoctorsContent } from "./doctors-content";
 import { HomeContent } from "./home-content";
 import ReportsContent from "./reports-content";
 import EducationContent from "./education-content";
-import  {labContent}  from "./lab-content";
+import { labContent } from "./lab-content";
+import DietPlanPage from "./diet-content";
 export const contentComponents = {
   home: HomeContent,
   dashboard: DashboardContent,
@@ -15,8 +16,8 @@ export const contentComponents = {
   lab: labContent,
   risk: () => <div className="text-2xl font-bold">AI Risk Assessment</div>,
   goals: () => <div className="text-2xl font-bold">Personal Goals</div>,
-  diet: () => <div className="text-2xl font-bold">Diet Plan</div>,
-  weather: () => <div className="text-2xl font-bold">Weather and Health</div>,
+  diet: DietPlanPage,
+  mentalhealth: () => <div className="text-2xl font-bold">Mental Health</div>,
   education: EducationContent,
   community: () => <div className="text-2xl font-bold">Community Forum</div>,
 };

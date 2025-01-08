@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
 import {
   Card,
   CardContent,
@@ -15,11 +16,18 @@ import {
 } from "../ui/dialog";
 
 interface Video {
-  id: string;
-  title: string;
-  description: string;
-  thumbnail: string;
-  videoUrl: string;
+  id: {
+    videoId: string;
+  };
+  snippet: {
+    title: string;
+    description: string;
+    thumbnails: {
+      medium: {
+        url: string;
+      };
+    };
+  };
 }
 
 interface VideoSectionProps {
@@ -28,86 +36,99 @@ interface VideoSectionProps {
 
 export function VideoSection({ searchQuery }: VideoSectionProps) {
   const [videos, setVideos] = useState<Video[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Mock API call - replace with actual API in production
     const fetchVideos = async () => {
-      // Simulating API delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      setIsLoading(true);
+      setError(null);
 
-      const mockVideos: Video[] = [
-        {
-          id: "1",
-          title: "Exercise Techniques",
-          description: "Learn proper exercise form for better results.",
-          thumbnail: "/placeholder.svg?height=100&width=200",
-          videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-        },
-        {
-          id: "2",
-          title: "Stress Management",
-          description: "Discover effective ways to manage stress.",
-          thumbnail: "/placeholder.svg?height=100&width=200",
-          videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-        },
-        {
-          id: "3",
-          title: "Healthy Cooking Tips",
-          description: "Quick and easy healthy cooking techniques.",
-          thumbnail: "/placeholder.svg?height=100&width=200",
-          videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-        },
-      ];
+      try {
+        const options = {
+          method: "GET",
+          url: "https://youtube-v31.p.rapidapi.com/search",
+          params: {
+            q: searchQuery || "health and wellness",
+            part: "id,snippet",
+            type: "video",
+            maxResults: "3",
+          },
+          headers: {
+            "x-rapidapi-key": process.env.NEXT_PUBLIC_YOUTUBE_API_KEY || "",
+            "x-rapidapi-host": "youtube-v31.p.rapidapi.com",
+          },
+        };
 
-      setVideos(
-        mockVideos.filter(
-          (video) =>
-            video.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            video.description.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      );
+        const response = await axios.request(options);
+        setVideos(response.data.items);
+      } catch (err) {
+        setError("Failed to fetch videos. Please try again later.");
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    fetchVideos();
+    // Debounce the API call to avoid too many requests while typing
+    const timeoutId = setTimeout(() => {
+      fetchVideos();
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
   }, [searchQuery]);
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
 
   return (
     <section>
       <h2 className="text-xl font-semibold mb-4">Videos</h2>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {videos.map((video) => (
-          <Dialog key={video.id}>
-            <DialogTrigger asChild>
-              <Card className="cursor-pointer">
-                <CardHeader>
-                  <CardTitle>{video.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <img
-                    src={video.thumbnail}
-                    alt={video.title}
-                    className="w-full h-32 object-cover mb-2 rounded-md"
-                  />
-                  <CardDescription>{video.description}</CardDescription>
-                </CardContent>
-              </Card>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>{video.title}</DialogTitle>
-              </DialogHeader>
-              <div className="aspect-video">
-                <iframe
-                  src={video.videoUrl}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="w-full h-full"
-                ></iframe>
-              </div>
-            </DialogContent>
-          </Dialog>
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="text-center">Loading...</div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {videos.map((video) => (
+            <Dialog key={video.id.videoId}>
+              <DialogTrigger asChild>
+                <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="line-clamp-2">
+                      {video.snippet.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <img
+                      src={video.snippet.thumbnails.medium.url}
+                      alt={video.snippet.title}
+                      className="w-full h-32 object-cover mb-2 rounded-md"
+                    />
+                    <CardDescription className="line-clamp-2">
+                      {video.snippet.description}
+                    </CardDescription>
+                  </CardContent>
+                </Card>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>{video.snippet.title}</DialogTitle>
+                </DialogHeader>
+                <div className="aspect-video">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${video.id.videoId}`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="w-full h-full"
+                  ></iframe>
+                </div>
+              </DialogContent>
+            </Dialog>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
+
+export default VideoSection;

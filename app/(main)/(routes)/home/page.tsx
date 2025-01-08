@@ -34,7 +34,7 @@ export default function Home() {
     { icon: TestTube, label: "Lab Tests", key: "lab" },
     { icon: AlertTriangle, label: "AI Risk Assessment", key: "risk" },
     { icon: Salad, label: "Diet Plan", key: "diet" },
-    { icon: Cloud, label: "Weather and Health", key: "weather" },
+    { icon: Brain, label: "Mental Health", key: "mentalhealth" },
     { icon: GraduationCap, label: "Health Education", key: "education" },
     { icon: Users, label: "Community Forum", key: "community" },
   ];

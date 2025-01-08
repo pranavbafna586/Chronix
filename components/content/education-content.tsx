@@ -3,9 +3,8 @@
 import { useState } from "react";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
-import { ArticleSection } from "@/components/health-education/article-section";
+import NewsFetcher from "@/components/health-education/NewsFetcher-section";
 import { VideoSection } from "@/components/health-education/video-section";
-import { ImageSection } from "@/components/health-education/image-section";
 
 export default function EducationContent() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -30,9 +29,8 @@ export default function EducationContent() {
         <Button type="submit">Search</Button>
       </form>
 
-      <ArticleSection searchQuery={searchQuery} />
+      <NewsFetcher searchQuery={searchQuery} />
       <VideoSection searchQuery={searchQuery} />
-      <ImageSection searchQuery={searchQuery} />
     </div>
   );
 }
