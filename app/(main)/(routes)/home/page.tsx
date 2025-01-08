@@ -18,6 +18,7 @@ import {
   Users,
   HomeIcon,
   TestTube,
+  PillBottleIcon,
 } from "lucide-react";
 export default function Home() {
   const [activeContent, setActiveContent] = useState<ContentKey>("home");
@@ -35,6 +36,7 @@ export default function Home() {
     { icon: AlertTriangle, label: "AI Risk Assessment", key: "risk" },
     { icon: Salad, label: "Diet Plan", key: "diet" },
     { icon: Brain, label: "Mental Health", key: "mentalhealth" },
+    { icon: PillBottleIcon, label: "Prescription", key: "prescription" },
     { icon: GraduationCap, label: "Health Education", key: "education" },
     { icon: Users, label: "Community Forum", key: "community" },
   ];
