@@ -201,83 +201,96 @@ export const AppointmentsContent = () => {
 
   return (
     <div className="space-y-6 px-4 py-8 max-w-7xl mx-auto">
-      <h2 className="text-3xl font-bold text-gray-800 mb-8">My Appointments</h2>
+      <div className="flex justify-center items-center">
+        <div className="space-y-4 mb-8">
+          {/* Search Input with Search Icon */}
+          <div className="relative max-w-lg mx-auto">
+            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-[#0047AB] size-5" />
+            <Input
+              type="text"
+              placeholder="Search doctors or specialties..."
+              className="pl-10 border-2 border-[#0047AB] text-[#0047AB] focus:ring-[#0047AB]"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
 
-      {/* Search and Filters */}
-      <div className="space-y-4 mb-8">
-        <Input
-          type="text"
-          placeholder="Search doctors or specialties..."
-          className="max-w-md"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <div className="flex flex-wrap gap-4">
-          <Select
-            value={filters.city}
-            onValueChange={(value: string) =>
-              setFilters({ ...filters, city: value })
-            }
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="City" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="New York">New York</SelectItem>
-              <SelectItem value="Los Angeles">Los Angeles</SelectItem>
-              <SelectItem value="Chicago">Chicago</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select
-            value={filters.specialty}
-            onValueChange={(value: any) =>
-              setFilters({ ...filters, specialty: value })
-            }
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Specialty" />
-            </SelectTrigger>
-            <SelectContent>
-              {specializations.map((spec) => (
-                <SelectItem key={spec.id} value={spec.name}>
-                  {spec.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            value={filters.language}
-            onValueChange={(value: any) =>
-              setFilters({ ...filters, language: value })
-            }
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Language" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="English">English</SelectItem>
-              <SelectItem value="Spanish">Spanish</SelectItem>
-              <SelectItem value="Mandarin">Mandarin</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select
-            value={filters.gender}
-            onValueChange={(value: any) =>
-              setFilters({ ...filters, gender: value })
-            }
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Gender" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Male">Male</SelectItem>
-              <SelectItem value="Female">Female</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button variant="outline" onClick={clearFilters}>
-            <X className="h-4 w-4 mr-2" />
-            Clear Filters
-          </Button>
+          {/* Filters Section */}
+          <div className="flex flex-wrap gap-4">
+            <Select
+              value={filters.city}
+              onValueChange={(value: string) =>
+                setFilters({ ...filters, city: value })
+              }
+            >
+              <SelectTrigger className="w-[180px] border-2 border-[#0047AB] text-[#0047AB]">
+                <SelectValue placeholder="City" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="New York">New York</SelectItem>
+                <SelectItem value="Los Angeles">Los Angeles</SelectItem>
+                <SelectItem value="Chicago">Chicago</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={filters.specialty}
+              onValueChange={(value: any) =>
+                setFilters({ ...filters, specialty: value })
+              }
+            >
+              <SelectTrigger className="w-[180px] border-2 border-[#0047AB] text-[#0047AB]">
+                <SelectValue placeholder="Specialty" />
+              </SelectTrigger>
+              <SelectContent>
+                {specializations.map((spec) => (
+                  <SelectItem key={spec.id} value={spec.name}>
+                    {spec.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={filters.language}
+              onValueChange={(value: any) =>
+                setFilters({ ...filters, language: value })
+              }
+            >
+              <SelectTrigger className="w-[180px] border-2 border-[#0047AB] text-[#0047AB]">
+                <SelectValue placeholder="Language" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="English">English</SelectItem>
+                <SelectItem value="Spanish">Spanish</SelectItem>
+                <SelectItem value="Mandarin">Mandarin</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={filters.gender}
+              onValueChange={(value: any) =>
+                setFilters({ ...filters, gender: value })
+              }
+            >
+              <SelectTrigger className="w-[180px] border-2 border-[#0047AB] text-[#0047AB]">
+                <SelectValue placeholder="Gender" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Male">Male</SelectItem>
+                <SelectItem value="Female">Female</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Button
+              variant="outline"
+              onClick={clearFilters}
+              className="border-2 border-[#0047AB] text-[#0047AB]"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Clear Filters
+            </Button>
+          </div>
         </div>
       </div>
 

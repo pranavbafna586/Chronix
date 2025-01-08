@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { User, Settings, LogOut } from 'lucide-react'
+import Link from "next/link";
+import { User, Settings, LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 
 export function Header() {
   return (
@@ -31,7 +31,8 @@ export function Header() {
             <DropdownMenuTrigger asChild>
               <button className="rounded-full bg-gray-100 p-2">
                 <span className="sr-only">Open user menu</span>
-                <div className="h-8 w-8 rounded-full bg-blue-600" />
+                <User className="h-8 w-8 text-gray-600" />{" "}
+                {/* Replaced blue circle with User icon */}
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -52,6 +53,5 @@ export function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }
-

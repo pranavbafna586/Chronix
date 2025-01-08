@@ -3,7 +3,16 @@ import {
   NavigationMenuList,
   NavigationMenuLink,
 } from "@radix-ui/react-navigation-menu";
-import { BadgeIcon, DollarSign, BookOpen, HelpCircle, Layout, Menu, X, User } from "lucide-react";
+import {
+  BadgeIcon,
+  DollarSign,
+  BookOpen,
+  HelpCircle,
+  Layout,
+  Menu,
+  X,
+  User,
+} from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -34,11 +43,14 @@ const Header = () => {
 
   return (
     <header className="fixed top-4 z-50 left-1/2 transform -translate-x-1/2 bg-gray-900 bg-opacity-90 px-4 lg:px-6 h-14 flex items-center shadow-sm rounded-full w-11/12 max-w-5xl">
-      <Link href="#" className="flex items-center justify-center gap-2" prefetch={false}>
+      <Link
+        href="#"
+        className="flex items-center justify-center gap-2"
+        prefetch={false}
+      >
         <BadgeIcon className="h-6 w-6 text-primary" />
-        <span className="text-lg font-semibold text-white">Health Care</span>
+        <span className="text-lg font-semibold text-white">Chronix</span>
       </Link>
-
 
       <nav className="ml-auto hidden md:flex gap-4 sm:gap-6">
         <NavigationMenu>
@@ -69,11 +81,7 @@ const Header = () => {
           size="icon"
           className="text-white"
         >
-          {menuOpen ? (
-            <X className="h-6 w-6" />
-          ) : (
-            <Menu className="h-6 w-6" />
-          )}
+          {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </Button>
       </div>
 
