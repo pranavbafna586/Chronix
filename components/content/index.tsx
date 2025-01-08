@@ -5,13 +5,14 @@ import { DoctorsContent } from "./doctors-content";
 import { HomeContent } from "./home-content";
 import ReportsContent from "./reports-content";
 import EducationContent from "./education-content";
+import  {labContent}  from "./lab-content";
 export const contentComponents = {
   home: HomeContent,
   dashboard: DashboardContent,
   appointments: AppointmentsContent,
   doctors: DoctorsContent,
   reports: ReportsContent,
-  diagnosis: () => <div className="text-2xl font-bold">AI Diagnosis</div>,
+  lab: labContent,
   risk: () => <div className="text-2xl font-bold">AI Risk Assessment</div>,
   goals: () => <div className="text-2xl font-bold">Personal Goals</div>,
   diet: () => <div className="text-2xl font-bold">Diet Plan</div>,

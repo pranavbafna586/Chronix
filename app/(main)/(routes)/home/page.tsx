@@ -31,7 +31,7 @@ export default function Home() {
     { icon: LayoutDashboard, label: "Dashboard", key: "dashboard" },
     { icon: Calendar, label: "My Appointments", key: "appointments" },
     { icon: FileText, label: "Reports", key: "reports" },
-    { icon: TestTube, label: "Lab Tests", key: "diagnosis" },
+    { icon: TestTube, label: "Lab Tests", key: "lab" },
     { icon: AlertTriangle, label: "AI Risk Assessment", key: "risk" },
     { icon: Salad, label: "Diet Plan", key: "diet" },
     { icon: Cloud, label: "Weather and Health", key: "weather" },
