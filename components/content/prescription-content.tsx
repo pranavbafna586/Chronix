@@ -37,10 +37,12 @@ export function prescriptionContent() {
   const [audioURL, setAudioURL] = useState<string | null>(null);
   const [editingRow, setEditingRow] = useState<number | null>(null);
   const [editedValues, setEditedValues] = useState<MedicineRow | {}>({});
+  const [canUpload, setCanUpload] = useState<boolean>(true);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const prescriptionRef = useRef<HTMLDivElement>(null);
+  const pdfContentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     return () => {
@@ -65,6 +67,7 @@ export function prescriptionContent() {
           type: "audio/wav",
         });
         setAudioBlob(audioBlob);
+        setCanUpload(true);
 
         const audioURL = URL.createObjectURL(audioBlob);
         setAudioURL(audioURL);
@@ -83,6 +86,7 @@ export function prescriptionContent() {
       mediaRecorder.start();
       mediaRecorderRef.current = mediaRecorder;
       setRecording(true);
+      setCanUpload(false);
     } catch (err) {
       setError(
         "Could not start recording. Please check your microphone permissions."
@@ -110,13 +114,10 @@ export function prescriptionContent() {
     formData.append("audio", audioBlob, "recording.wav");
 
     try {
-      const response = await fetch(
-        "https://flaskapphealthcare-1.onrender.com/upload",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const response = await fetch("http://127.0.0.1:5000/upload", {
+        method: "POST",
+        body: formData,
+      });
 
       if (!response.ok) {
         throw new Error(`Server error: ${response.statusText}`);
@@ -142,13 +143,11 @@ export function prescriptionContent() {
     const updatedTable = [...prescriptionData.medicine_table];
     updatedTable[index] = editedValues as MedicineRow;
 
-    // Create the updated prescription data
     const updatedPrescriptionData = {
       ...prescriptionData,
       medicine_table: updatedTable,
     };
 
-    // Update the responseJson with the correct format
     setResponseJson({
       ...responseJson,
       data: `\`\`\`json\n${JSON.stringify(
@@ -175,18 +174,16 @@ export function prescriptionContent() {
   };
 
   const downloadPDF = async () => {
-    if (!prescriptionRef.current) return;
+    if (!pdfContentRef.current) return;
 
     try {
-      // Create canvas with better quality
-      const canvas = await html2canvas(prescriptionRef.current, {
+      const canvas = await html2canvas(pdfContentRef.current, {
         scale: 2,
         backgroundColor: "#ffffff",
         logging: false,
         useCORS: true,
       });
 
-      // Create PDF with A4 dimensions (595.28 x 841.89) in points
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "pt",
@@ -195,14 +192,11 @@ export function prescriptionContent() {
 
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
-
-      // Calculate dimensions
       const margin = 40;
       const availableWidth = pageWidth - margin * 2;
       const aspectRatio = canvas.height / canvas.width;
       const imgHeight = availableWidth * aspectRatio;
 
-      // Add content
       pdf.addImage(
         canvas.toDataURL("image/png"),
         "PNG",
@@ -212,13 +206,11 @@ export function prescriptionContent() {
         imgHeight
       );
 
-      // Add footer
       pdf.setFontSize(10);
       pdf.setTextColor(128, 128, 128);
       const footerText = `Generated on: ${new Date().toLocaleDateString()}`;
       pdf.text(footerText, margin, pageHeight - margin);
 
-      // Save PDF
       const pdfBlob = pdf.output("blob");
       const pdfUrl = URL.createObjectURL(pdfBlob);
 
@@ -240,8 +232,7 @@ export function prescriptionContent() {
       if (!response?.data) return null;
       const jsonMatch = response.data.match(/```json\n([\s\S]*)\n```/);
       if (jsonMatch && jsonMatch[1]) {
-        const parsedData = JSON.parse(jsonMatch[1]);
-        return parsedData;
+        return JSON.parse(jsonMatch[1]);
       }
       return null;
     } catch (error) {
@@ -257,7 +248,7 @@ export function prescriptionContent() {
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
-        <CardTitle>Community Forum - Voice Prescription</CardTitle>
+        <CardTitle>Voice Prescription</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex items-center space-x-4">
@@ -277,9 +268,20 @@ export function prescriptionContent() {
             <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
           )}
 
-          <Button variant="default" onClick={uploadAudio} disabled={!audioBlob}>
+          <Button
+            variant="default"
+            onClick={uploadAudio}
+            disabled={!audioBlob || !canUpload}
+          >
             Upload Audio
           </Button>
+
+          {prescriptionData && (
+            <Button onClick={downloadPDF}>
+              <Download className="mr-2 h-4 w-4" />
+              Download PDF
+            </Button>
+          )}
         </div>
 
         {audioURL && (
@@ -295,16 +297,11 @@ export function prescriptionContent() {
             className="space-y-4 bg-white p-8 rounded-lg"
             ref={prescriptionRef}
           >
-            {/* Download button outside the PDF content */}
-            <div className="flex justify-end mb-4">
-              <Button onClick={downloadPDF}>
-                <Download className="mr-2 h-4 w-4" />
-                Download PDF
-              </Button>
-            </div>
-
-            {/* Prescription content for PDF */}
-            <div className="space-y-6 border p-6 rounded-lg">
+            {/* PDF content */}
+            <div
+              className="space-y-6 border p-6 rounded-lg"
+              ref={pdfContentRef}
+            >
               <div className="text-center mb-8">
                 <h1 className="text-3xl font-bold mb-2">
                   Medical Prescription
