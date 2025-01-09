@@ -7,9 +7,10 @@ import ReportsContent from "./reports-content";
 import EducationContent from "./education-content";
 import { labContent } from "./lab-content";
 import DietPlanPage from "./diet-content";
-import {prescriptionContent} from "./prescription-content";
+import { prescriptionContent } from "./prescription-content";
 import MentalHealthPage from "./mentalhealth-content";
 import RiskAssessment from "./risk-content";
+import { DrAppointmentsContent } from "./dr-appointments-content";
 export const contentComponents = {
   home: HomeContent,
   dashboard: DashboardContent,
@@ -23,6 +24,7 @@ export const contentComponents = {
   prescription: prescriptionContent,
   education: EducationContent,
   community: () => <div className="text-2xl font-bold">Community Forum</div>,
+  drappointments: DrAppointmentsContent,
 };
 
 export type ContentKey = keyof typeof contentComponents;

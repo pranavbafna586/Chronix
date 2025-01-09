@@ -21,7 +21,7 @@ export default function Home() {
     key: ContentKey;
   }[] = [
     { icon: LayoutDashboard, label: "Dashboard", key: "dashboard" },
-    { icon: Calendar, label: "Appointments", key: "appointments" },
+    { icon: Calendar, label: "DrAppointments", key: "drappointments" },
     { icon: PillBottleIcon, label: "Prescription", key: "prescription" },
   ];
 
