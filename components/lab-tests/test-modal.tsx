@@ -10,17 +10,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Disease } from "@/lib/diseases";
-import { cn } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { InfoIcon, Minus, Plus } from "lucide-react";
+import { InfoIcon } from "lucide-react";
+import { predictDisease } from "@/lib/api";
 
 interface TestModalProps {
   disease: Disease | null;
@@ -29,74 +28,123 @@ interface TestModalProps {
 }
 
 export function TestModal({ disease, onClose, onComplete }: TestModalProps) {
-  const [answers, setAnswers] = useState<Record<string, number | boolean>>({});
-  const [parameters, setParameters] = useState<Record<string, number>>({});
-  const [followUpAnswers, setFollowUpAnswers] = useState<
-    Record<string, boolean>
-  >({});
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [followUpAnswers, setFollowUpAnswers] = useState<Record<string, string>>({});
 
   if (!disease) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Calculate score based on answers and parameters
-    const questionScore = Object.values(answers).reduce((score, answer) => {
-      if (typeof answer === "number") {
-        return score + (answer / 10) * 20;
-      } else {
-        return score + (answer ? 20 : 0);
+    const formData = disease.questions.reduce((acc, question, index) => {
+      // Add main answer
+      acc[question.text.toLowerCase().replace(/\s+/g, '_')] = answers[index];
+      
+      // Add follow-up answer if exists
+      if (question.followUp && answers[index] === 'Yes') {
+        acc[question.followUp.text.toLowerCase().replace(/\s+/g, '_')] = followUpAnswers[index];
       }
-    }, 0);
+      
+      return acc;
+    }, {} as Record<string, string>);
 
-    const parameterScore = Object.entries(parameters).reduce(
-      (score, [key, value]) => {
-        const param = disease.parameters.find((p) => p.id === key);
-        if (!param) return score;
-
-        const [min, max] = param.average.split("-").map(parseFloat);
-        const avgValue = (min + max) / 2;
-
-        return score + (Math.abs(value - avgValue) < avgValue * 0.1 ? 10 : 0);
-      },
-      0
-    );
-
-    const followUpScore = Object.values(followUpAnswers).reduce(
-      (score, answer) => {
-        return score + (answer ? 10 : 0);
-      },
-      0
-    );
-
-    const totalScore = Math.min(
-      100,
-      ((questionScore + parameterScore + followUpScore) / (100 + 50 + 50)) * 100
-    );
-    onComplete(disease.id, totalScore);
-  };
-
-  const handleSliderChange = (questionIndex: number, value: number[]) => {
-    setAnswers((prev) => ({ ...prev, [questionIndex]: value[0] }));
-  };
-
-  const handleToggleChange = (questionIndex: number, checked: boolean) => {
-    setAnswers((prev) => ({ ...prev, [questionIndex]: checked }));
-
-    // Check if follow-up question should be shown
-    if (checked && disease.questions[questionIndex].followUp) {
-      setFollowUpAnswers((prev) => ({ ...prev, [questionIndex]: false }));
-    } else {
-      setFollowUpAnswers((prev) => {
-        const newAnswers = { ...prev };
-        delete newAnswers[questionIndex];
-        return newAnswers;
-      });
+    try {
+      const score = await predictDisease(disease.id, formData);
+      onComplete(disease.id, score);
+    } catch (error) {
+      console.log(formData);
+      console.error('Failed to get prediction:', error);
+      // Handle error appropriately
     }
   };
 
-  const handleParameterChange = (paramId: string, value: number) => {
-    setParameters((prev) => ({ ...prev, [paramId]: value }));
+  const renderQuestion = (question: Disease['questions'][0], index: number) => {
+    const inputId = `question-${index}`;
+    const questionValue = answers[index];
+
+    return (
+      <div key={index} className="space-y-2">
+        <div className="flex items-center space-x-2">
+          <Label htmlFor={inputId}>
+            {question.text}
+            {question.unit ? ` (${question.unit})` : ''}
+          </Label>
+          {question.tooltip && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <InfoIcon className="h-4 w-4 text-muted-foreground" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{question.tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
+
+        {question.type === 'radio' ? (
+          <RadioGroup
+            value={questionValue}
+            onValueChange={(value) => setAnswers((prev) => ({ ...prev, [index]: value }))}
+          >
+            <div className="flex gap-4">
+              {question.options?.map((option) => (
+                <div key={option} className="flex items-center space-x-2">
+                  <RadioGroupItem value={option} id={`${inputId}-${option}`} />
+                  <Label htmlFor={`${inputId}-${option}`}>{option}</Label>
+                </div>
+              ))}
+            </div>
+          </RadioGroup>
+        ) : (
+          <div className="relative">
+            <Input
+              id={inputId}
+              type="number"
+              value={questionValue || ''}
+              onChange={(e) => setAnswers((prev) => ({ ...prev, [index]: e.target.value }))}
+              className="w-full"
+              placeholder={question.tooltip || `Enter ${question.text.toLowerCase()}`}
+            />
+          </div>
+        )}
+
+        {/* Render follow-up question if applicable */}
+        {question.followUp && questionValue === 'Yes' && (
+          <div className="ml-6 mt-2">
+            <div className="flex items-center space-x-2">
+              <Label htmlFor={`followup-${index}`}>
+                {question.followUp.text}
+                {question.followUp.unit ? ` (${question.followUp.unit})` : ''}
+              </Label>
+              {question.followUp.tooltip && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon className="h-4 w-4 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{question.followUp.tooltip}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
+            <Input
+              id={`followup-${index}`}
+              type="number"
+              value={followUpAnswers[index] || ''}
+              onChange={(e) =>
+                setFollowUpAnswers((prev) => ({ ...prev, [index]: e.target.value }))
+              }
+              className="w-full"
+              placeholder={question.followUp.tooltip || `Enter ${question.followUp.text.toLowerCase()}`}
+            />
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -107,112 +155,7 @@ export function TestModal({ disease, onClose, onComplete }: TestModalProps) {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
-            <h3 className="font-medium">Questions</h3>
-            {disease.questions.map((question, index) => (
-              <div key={index} className="space-y-2">
-                <Label>{question.text}</Label>
-                {question.type === "slider" ? (
-                  <div className="space-y-2">
-                    <Slider
-                      min={0}
-                      max={10}
-                      step={1}
-                      value={[(answers[index] as number) || 0]}
-                      onValueChange={(value) =>
-                        handleSliderChange(index, value)
-                      }
-                    />
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Rarely</span>
-                      <span>Always</span>
-                    </div>
-                  </div>
-                ) : (
-                  <Switch
-                    checked={!!answers[index]}
-                    onCheckedChange={(checked) =>
-                      handleToggleChange(index, checked)
-                    }
-                  />
-                )}
-                {followUpAnswers.hasOwnProperty(index) && (
-                  <div className="ml-6 mt-2">
-                    <Label>{question.followUp}</Label>
-                    <Switch
-                      checked={!!followUpAnswers[index]}
-                      onCheckedChange={(checked) =>
-                        setFollowUpAnswers((prev) => ({
-                          ...prev,
-                          [index]: checked,
-                        }))
-                      }
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-          <div className="space-y-4">
-            <h3 className="font-medium">Parameters</h3>
-            {disease.parameters.map((param) => (
-              <div key={param.id} className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Label htmlFor={param.id}>{param.label}</Label>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <InfoIcon className="h-4 w-4 text-muted-foreground" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Average range: {param.average}</p>
-                        {param.helper && <p>{param.helper}</p>}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() =>
-                      handleParameterChange(
-                        param.id,
-                        (parameters[param.id] || 0) - 1
-                      )
-                    }
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <Input
-                    id={param.id}
-                    type="number"
-                    placeholder={`Avg: ${param.average}`}
-                    value={parameters[param.id] || ""}
-                    onChange={(e) =>
-                      handleParameterChange(
-                        param.id,
-                        parseFloat(e.target.value)
-                      )
-                    }
-                    className="w-24 text-center"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() =>
-                      handleParameterChange(
-                        param.id,
-                        (parameters[param.id] || 0) + 1
-                      )
-                    }
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
+            {disease.questions.map((question, index) => renderQuestion(question, index))}
           </div>
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={onClose}>

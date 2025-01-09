@@ -1,18 +1,21 @@
+// diseases.ts
 export interface Disease {
-  id: string
-  name: string
-  description: string
+  id: string;
+  name: string;
+  description: string;
   questions: {
-    text: string
-    type: 'slider' | 'toggle'
-    followUp?: string
-  }[]
-  parameters: {
-    id: string
-    label: string
-    average: string
-    helper?: string
-  }[]
+    text: string;
+    type: 'radio' | 'number';
+    options?: string[];
+    unit?: string;
+    tooltip?: string;
+    followUp?: {
+      text: string;
+      type: 'number';
+      unit?: string;
+      tooltip?: string;
+    };
+  }[];
 }
 
 export const diseases: Disease[] = [
@@ -22,39 +25,53 @@ export const diseases: Disease[] = [
     description: "A chronic condition affecting how your body processes blood sugar.",
     questions: [
       {
-        text: "How frequently do you feel excessively thirsty?",
-        type: "slider"
+        text: "Gender",
+        type: "radio",
+        options: ["Male", "Female"]
       },
       {
-        text: "Have you noticed frequent urination?",
-        type: "toggle",
-        followUp: "Is it disrupting your sleep?"
+        text: "Age",
+        type: "number",
+        unit: "years"
       },
       {
-        text: "Do you feel fatigued without reason?",
-        type: "toggle"
+        text: "Do you have Hypertension?",
+        type: "radio",
+        options: ["Yes", "No"]
       },
       {
-        text: "Have you experienced unexplained weight loss?",
-        type: "toggle"
+        text: "Do you have Heart Disease?",
+        type: "radio",
+        options: ["Yes", "No"]
       },
       {
-        text: "Do you have blurred vision occasionally?",
-        type: "toggle"
-      }
-    ],
-    parameters: [
-      {
-        id: "fasting-glucose",
-        label: "Fasting Blood Sugar Level",
-        average: "80–100 mg/dL",
-        helper: "Measure after 8 hours of fasting"
+        text: "Height",
+        type: "number",
+        unit: "cm",
+        tooltip: "Enter your height in centimeters"
       },
       {
-        id: "hba1c",
-        label: "HbA1c Percentage",
-        average: "4.0–5.6%",
-        helper: "Average blood sugar level over past 2-3 months"
+        text: "Weight",
+        type: "number",
+        unit: "kg",
+        tooltip: "Enter your weight in kilograms"
+      },
+      {
+        text: "HbA1c Level",
+        type: "number",
+        unit: "%",
+        tooltip: "HbA1c is a measure of blood sugar levels over the past 3 months"
+      },
+      {
+        text: "Blood Glucose Level",
+        type: "number",
+        unit: "mg/dL",
+        tooltip: "Enter your current fasting blood glucose level"
+      },
+      {
+        text: "Smoking Habit",
+        type: "radio",
+        options: ["Yes", "No"]
       }
     ]
   },
@@ -64,161 +81,72 @@ export const diseases: Disease[] = [
     description: "High blood pressure that can lead to serious health problems.",
     questions: [
       {
-        text: "Do you experience frequent headaches or dizziness?",
-        type: "toggle"
+        text: "Gender",
+        type: "radio",
+        options: ["Male", "Female"]
       },
       {
-        text: "Have you felt chest pain or tightness recently?",
-        type: "toggle"
+        text: "Age",
+        type: "number",
+        unit: "years"
       },
       {
-        text: "Do you exercise regularly?",
-        type: "toggle"
+        text: "Do you smoke?",
+        type: "radio",
+        options: ["Yes", "No"],
+        followUp: {
+          text: "Number of cigarettes smoked per day",
+          type: "number",
+          unit: "count",
+          tooltip: "Approximate number of cigarettes you smoke daily"
+        }
       },
       {
-        text: "Do you have a family history of high blood pressure?",
-        type: "toggle"
+        text: "Do you use Blood Pressure Medicine?",
+        type: "radio",
+        options: ["Yes", "No"]
       },
       {
-        text: "Do you consume a high-salt diet?",
-        type: "toggle"
-      }
-    ],
-    parameters: [
-      {
-        id: "systolic",
-        label: "Systolic Blood Pressure",
-        average: "120 mmHg",
-        helper: "The top number in blood pressure reading"
+        text: "Total Cholesterol Level",
+        type: "number",
+        unit: "mg/dL",
+        tooltip: "Enter your latest total cholesterol reading"
       },
       {
-        id: "diastolic",
-        label: "Diastolic Blood Pressure",
-        average: "80 mmHg",
-        helper: "The bottom number in blood pressure reading"
-      }
-    ]
-  },
-  {
-    id: "thyroid",
-    name: "Thyroid",
-    description: "A condition affecting the thyroid gland and hormone production.",
-    questions: [
-      {
-        text: "Have you experienced unexplained weight changes?",
-        type: "toggle"
+        text: "Systolic Blood Pressure",
+        type: "number",
+        unit: "mmHg",
+        tooltip: "Enter the higher number of your blood pressure reading"
       },
       {
-        text: "Do you often feel unusually tired or sluggish?",
-        type: "toggle"
+        text: "Diastolic Blood Pressure",
+        type: "number",
+        unit: "mmHg",
+        tooltip: "Enter the lower number of your blood pressure reading"
       },
       {
-        text: "Do you have dry skin or hair loss?",
-        type: "toggle"
+        text: "Height",
+        type: "number",
+        unit: "cm",
+        tooltip: "Enter your height in centimeters"
       },
       {
-        text: "Do you feel cold when others feel warm?",
-        type: "toggle"
+        text: "Weight",
+        type: "number",
+        unit: "kg",
+        tooltip: "Enter your weight in kilograms"
       },
       {
-        text: "Have you noticed changes in your heart rate?",
-        type: "toggle"
-      }
-    ],
-    parameters: [
-      {
-        id: "tsh",
-        label: "TSH Level",
-        average: "0.4–4.0 mIU/L",
-        helper: "Thyroid Stimulating Hormone level"
+        text: "Heart Rate",
+        type: "number",
+        unit: "bpm",
+        tooltip: "Enter your resting heart rate in beats per minute"
       },
       {
-        id: "t4",
-        label: "Free T4 Level",
-        average: "0.8–1.8 ng/dL",
-        helper: "Thyroxine hormone level"
-      }
-    ]
-  },
-  {
-    id: "anemia",
-    name: "Anemia",
-    description: "A condition where you lack enough healthy red blood cells.",
-    questions: [
-      {
-        text: "Do you feel short of breath even with light activity?",
-        type: "toggle"
-      },
-      {
-        text: "Have you noticed unusual paleness or cold hands/feet?",
-        type: "toggle"
-      },
-      {
-        text: "Do you often feel dizzy or lightheaded?",
-        type: "toggle"
-      },
-      {
-        text: "Do you feel unusually tired or weak?",
-        type: "toggle"
-      },
-      {
-        text: "Do you have frequent headaches?",
-        type: "toggle"
-      }
-    ],
-    parameters: [
-      {
-        id: "hemoglobin",
-        label: "Hemoglobin Level",
-        average: "12–16 g/dL",
-        helper: "Protein in red blood cells that carries oxygen"
-      },
-      {
-        id: "ferritin",
-        label: "Ferritin Level",
-        average: "30–400 ng/mL",
-        helper: "Protein that stores iron"
-      }
-    ]
-  },
-  {
-    id: "copd",
-    name: "COPD",
-    description: "A chronic inflammatory lung disease causing airflow blockage.",
-    questions: [
-      {
-        text: "Do you experience shortness of breath regularly?",
-        type: "toggle"
-      },
-      {
-        text: "Have you noticed persistent coughing with mucus?",
-        type: "toggle"
-      },
-      {
-        text: "Are you exposed to smoke or pollutants often?",
-        type: "toggle"
-      },
-      {
-        text: "Do you have trouble sleeping due to breathing issues?",
-        type: "toggle"
-      },
-      {
-        text: "Do you get frequent respiratory infections?",
-        type: "toggle"
-      }
-    ],
-    parameters: [
-      {
-        id: "fev1",
-        label: "FEV1",
-        average: ">80%",
-        helper: "Forced expiratory volume in 1 second"
-      },
-      {
-        id: "oxygen",
-        label: "Oxygen Saturation",
-        average: "95–100%",
-        helper: "Amount of oxygen in your blood"
+        text: "Glucose Level",
+        type: "number",
+        unit: "mg/dL",
+        tooltip: "Enter your current fasting blood glucose level"
       }
     ]
   },
@@ -228,81 +156,67 @@ export const diseases: Disease[] = [
     description: "Conditions affecting your heart's structure and function.",
     questions: [
       {
-        text: "Do you often experience chest pain or tightness?",
-        type: "toggle"
+        text: "Age",
+        type: "number",
+        unit: "years"
       },
       {
-        text: "Have you been diagnosed with high cholesterol?",
-        type: "toggle"
+        text: "Gender",
+        type: "radio",
+        options: ["Male", "Female"]
       },
       {
-        text: "Do you feel short of breath even at rest?",
-        type: "toggle"
+        text: "Systolic Blood Pressure",
+        type: "number",
+        unit: "mmHg",
+        tooltip: "Enter the higher number of your blood pressure reading"
       },
       {
-        text: "Do you have swelling in your legs or ankles?",
-        type: "toggle"
+        text: "Diastolic Blood Pressure",
+        type: "number",
+        unit: "mmHg",
+        tooltip: "Enter the lower number of your blood pressure reading"
       },
       {
-        text: "Do you experience irregular heartbeats?",
-        type: "toggle"
-      }
-    ],
-    parameters: [
-      {
-        id: "ldl",
-        label: "LDL Cholesterol",
-        average: "<100 mg/dL",
-        helper: "Low-density lipoprotein cholesterol level"
+        text: "Total Cholesterol Level",
+        type: "number",
+        unit: "mg/dL",
+        tooltip: "Enter your latest total cholesterol reading"
       },
       {
-        id: "heart-rate",
-        label: "Resting Heart Rate",
-        average: "60–100 bpm",
-        helper: "Number of heart beats per minute at rest"
-      }
-    ]
-  },
-  {
-    id: "kidney",
-    name: "Kidney Disease",
-    description: "Conditions affecting your kidneys' ability to filter blood.",
-    questions: [
-      {
-        text: "Do you experience swelling in your hands or feet?",
-        type: "toggle"
+        text: "Glucose Level",
+        type: "number",
+        unit: "mg/dL",
+        tooltip: "Enter your current fasting blood glucose level"
       },
       {
-        text: "Have you noticed foamy or dark urine?",
-        type: "toggle"
+        text: "Smoking Habit",
+        type: "radio",
+        options: ["Yes", "No"]
       },
       {
-        text: "Do you feel fatigued or have trouble concentrating?",
-        type: "toggle"
+        text: "Do you consume Alcohol?",
+        type: "radio",
+        options: ["Yes", "No"]
       },
       {
-        text: "Do you have high blood pressure?",
-        type: "toggle"
+        text: "Are you Physically Active?",
+        type: "radio",
+        options: ["Yes", "No"],
+        tooltip: "Engaging in moderate exercise at least 3 times a week"
       },
       {
-        text: "Do you have diabetes?",
-        type: "toggle"
-      }
-    ],
-    parameters: [
-      {
-        id: "creatinine",
-        label: "Serum Creatinine",
-        average: "0.7–1.3 mg/dL",
-        helper: "Waste product filtered by kidneys"
+        text: "Height",
+        type: "number",
+        unit: "cm",
+        tooltip: "Enter your height in centimeters"
       },
       {
-        id: "gfr",
-        label: "GFR",
-        average: ">90 mL/min/1.73 m²",
-        helper: "Glomerular Filtration Rate - kidney function measure"
+        text: "Weight",
+        type: "number",
+        unit: "kg",
+        tooltip: "Enter your weight in kilograms"
       }
     ]
   }
-]
-
+];
