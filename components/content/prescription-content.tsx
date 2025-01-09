@@ -1,18 +1,54 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Mic, MicOff, Download, Edit2, Check, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import "jspdf-autotable";
 
-const prescriptionContent: React.FC = () => {
+interface MedicineRow {
+  "Sr.No": string | number;
+  "Medicine Name": string;
+  "Dosage Time": string;
+  Instruction: string;
+}
+
+interface PrescriptionData {
+  hospital_name?: string;
+  doctor_name?: string;
+  patient_name?: string;
+  date?: string;
+  medicine_table: MedicineRow[];
+}
+
+export function prescriptionContent() {
   const [recording, setRecording] = useState<boolean>(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [responseJson, setResponseJson] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [audioURL, setAudioURL] = useState<string | null>(null);
-  const [editableData, setEditableData] = useState<any>(null);
+  const [editingRow, setEditingRow] = useState<number | null>(null);
+  const [editedValues, setEditedValues] = useState<MedicineRow | {}>({});
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const prescriptionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    return () => {
+      if (audioURL) {
+        URL.revokeObjectURL(audioURL);
+      }
+    };
+  }, [audioURL]);
 
   const startRecording = async () => {
     setError(null);
@@ -33,6 +69,14 @@ const prescriptionContent: React.FC = () => {
         const audioURL = URL.createObjectURL(audioBlob);
         setAudioURL(audioURL);
 
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (reader.result) {
+            localStorage.setItem("recordedAudio", reader.result.toString());
+          }
+        };
+        reader.readAsDataURL(audioBlob);
+
         audioChunksRef.current = [];
       };
 
@@ -47,7 +91,10 @@ const prescriptionContent: React.FC = () => {
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current?.state === "recording") {
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state === "recording"
+    ) {
       mediaRecorderRef.current.stop();
       setRecording(false);
     }
@@ -64,7 +111,7 @@ const prescriptionContent: React.FC = () => {
 
     try {
       const response = await fetch(
-        "https://flaskapphealthcare-1.onrender.com",
+        "https://flaskapphealthcare-1.onrender.com/upload",
         {
           method: "POST",
           body: formData,
@@ -77,18 +124,124 @@ const prescriptionContent: React.FC = () => {
 
       const data = await response.json();
       setResponseJson(data);
-      setEditableData(parseMedicineData(data)); // Set editable data
     } catch (err: any) {
       setError(`Failed to upload audio: ${err.message}`);
     }
   };
 
-  const parseMedicineData = (response: any) => {
+  const handleEdit = (index: number) => {
+    if (prescriptionData?.medicine_table[index]) {
+      setEditingRow(index);
+      setEditedValues(prescriptionData.medicine_table[index]);
+    }
+  };
+
+  const handleSave = (index: number) => {
+    if (!prescriptionData) return;
+
+    const updatedTable = [...prescriptionData.medicine_table];
+    updatedTable[index] = editedValues as MedicineRow;
+
+    // Create the updated prescription data
+    const updatedPrescriptionData = {
+      ...prescriptionData,
+      medicine_table: updatedTable,
+    };
+
+    // Update the responseJson with the correct format
+    setResponseJson({
+      ...responseJson,
+      data: `\`\`\`json\n${JSON.stringify(
+        updatedPrescriptionData,
+        null,
+        2
+      )}\n\`\`\``,
+    });
+
+    setEditingRow(null);
+    setEditedValues({});
+  };
+
+  const handleCancel = () => {
+    setEditingRow(null);
+    setEditedValues({});
+  };
+
+  const handleInputChange = (field: keyof MedicineRow, value: string) => {
+    setEditedValues((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const downloadPDF = async () => {
+    if (!prescriptionRef.current) return;
+
+    try {
+      // Create canvas with better quality
+      const canvas = await html2canvas(prescriptionRef.current, {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        logging: false,
+        useCORS: true,
+      });
+
+      // Create PDF with A4 dimensions (595.28 x 841.89) in points
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "pt",
+        format: "a4",
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      // Calculate dimensions
+      const margin = 40;
+      const availableWidth = pageWidth - margin * 2;
+      const aspectRatio = canvas.height / canvas.width;
+      const imgHeight = availableWidth * aspectRatio;
+
+      // Add content
+      pdf.addImage(
+        canvas.toDataURL("image/png"),
+        "PNG",
+        margin,
+        margin,
+        availableWidth,
+        imgHeight
+      );
+
+      // Add footer
+      pdf.setFontSize(10);
+      pdf.setTextColor(128, 128, 128);
+      const footerText = `Generated on: ${new Date().toLocaleDateString()}`;
+      pdf.text(footerText, margin, pageHeight - margin);
+
+      // Save PDF
+      const pdfBlob = pdf.output("blob");
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+
+      const link = document.createElement("a");
+      link.href = pdfUrl;
+      link.download = "prescription.pdf";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(pdfUrl);
+    } catch (err) {
+      console.error("PDF generation error:", err);
+      setError("Failed to download PDF");
+    }
+  };
+
+  const parseMedicineData = (response: any): PrescriptionData | null => {
     try {
       if (!response?.data) return null;
       const jsonMatch = response.data.match(/```json\n([\s\S]*)\n```/);
       if (jsonMatch && jsonMatch[1]) {
-        return JSON.parse(jsonMatch[1]);
+        const parsedData = JSON.parse(jsonMatch[1]);
+        return parsedData;
       }
       return null;
     } catch (error) {
@@ -97,197 +250,227 @@ const prescriptionContent: React.FC = () => {
     }
   };
 
-  const handleFieldChange = (field: string, value: string) => {
-    if (!editableData) return;
-    setEditableData({ ...editableData, [field]: value });
-  };
-
-  const handleTableChange = (index: number, key: string, value: string) => {
-    if (!editableData?.medicine_table) return;
-    const updatedTable = editableData.medicine_table.map(
-      (medicine: any, i: number) =>
-        i === index ? { ...medicine, [key]: value } : medicine
-    );
-    setEditableData({ ...editableData, medicine_table: updatedTable });
-  };
-
-  const downloadPDF = () => {
-    const doc = new jsPDF() as jsPDF & { autoTable: (options: any) => void };
-    autoTable(doc, {});
-
-    if (editableData) {
-      doc.text("Prescription Details", 10, 10);
-      doc.text(`Hospital: ${editableData.hospital_name || ""}`, 10, 20);
-      doc.text(`Doctor: ${editableData.doctor_name || ""}`, 10, 30);
-      doc.text(`Patient: ${editableData.patient_name || ""}`, 10, 40);
-      doc.text(`Date: ${editableData.date || ""}`, 10, 50);
-
-      if (editableData.medicine_table) {
-        const tableData = editableData.medicine_table.map((row: any) => [
-          row["Sr.No"],
-          row["Medicine Name"],
-          row["Dosage Time"],
-          row["Instruction"],
-        ]);
-
-        doc.autoTable({
-          head: [["Sr. No", "Medicine Name", "Timing", "Instructions"]],
-          body: tableData,
-          startY: 60,
-        });
-      }
-    }
-
-    doc.save("Prescription.pdf");
-  };
+  const prescriptionData = responseJson
+    ? parseMedicineData(responseJson)
+    : null;
 
   return (
-    <div className="p-4">
-      <h1 className="text-xl font-bold">Prescription Generator</h1>
-
-      <div className="mt-4">
-        {recording ? (
-          <button
-            className="bg-red-500 text-white px-4 py-2 rounded"
-            onClick={stopRecording}
+    <Card className="w-full max-w-4xl mx-auto">
+      <CardHeader>
+        <CardTitle>Community Forum - Voice Prescription</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="flex items-center space-x-4">
+          <Button
+            onClick={recording ? stopRecording : startRecording}
+            variant={recording ? "destructive" : "default"}
           >
-            Stop Recording
-          </button>
-        ) : (
-          <button
-            className="bg-green-500 text-white px-4 py-2 rounded"
-            onClick={startRecording}
-          >
-            Start Recording
-          </button>
-        )}
+            {recording ? (
+              <MicOff className="mr-2 h-4 w-4" />
+            ) : (
+              <Mic className="mr-2 h-4 w-4" />
+            )}
+            {recording ? "Stop Recording" : "Start Recording"}
+          </Button>
 
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded ml-2"
-          onClick={uploadAudio}
-          disabled={!audioBlob}
-        >
-          Upload Audio
-        </button>
-      </div>
-
-      {audioURL && (
-        <div className="mt-4">
-          <h2 className="text-lg font-bold">Preview</h2>
-          <audio controls src={audioURL} className="w-full mt-2" />
-        </div>
-      )}
-
-      {error && <p className="text-red-500 mt-2">{error}</p>}
-
-      {editableData && (
-        <div className="mt-8">
-          <h2 className="text-2xl font-bold mb-4">Prescription Details</h2>
-
-          <input
-            className="mb-2 border p-2 rounded w-full"
-            value={editableData.hospital_name || ""}
-            onChange={(e) => handleFieldChange("hospital_name", e.target.value)}
-            placeholder="Hospital Name"
-          />
-          <input
-            className="mb-2 border p-2 rounded w-full"
-            value={editableData.doctor_name || ""}
-            onChange={(e) => handleFieldChange("doctor_name", e.target.value)}
-            placeholder="Doctor Name"
-          />
-          <input
-            className="mb-2 border p-2 rounded w-full"
-            value={editableData.patient_name || ""}
-            onChange={(e) => handleFieldChange("patient_name", e.target.value)}
-            placeholder="Patient Name"
-          />
-          <input
-            className="mb-2 border p-2 rounded w-full"
-            value={editableData.date || ""}
-            onChange={(e) => handleFieldChange("date", e.target.value)}
-            placeholder="Date"
-          />
-
-          {editableData.medicine_table && (
-            <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-              <thead>
-                <tr>
-                  <th className="px-6 py-3">Sr. No</th>
-                  <th className="px-6 py-3">Medicine Name</th>
-                  <th className="px-6 py-3">Timing</th>
-                  <th className="px-6 py-3">Instructions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {editableData.medicine_table.map(
-                  (medicine: any, index: number) => (
-                    <tr key={index}>
-                      <td className="px-6 py-4">
-                        <input
-                          className="w-full border rounded p-1"
-                          value={medicine["Sr.No"]}
-                          onChange={(e) =>
-                            handleTableChange(index, "Sr.No", e.target.value)
-                          }
-                        />
-                      </td>
-                      <td className="px-6 py-4">
-                        <input
-                          className="w-full border rounded p-1"
-                          value={medicine["Medicine Name"]}
-                          onChange={(e) =>
-                            handleTableChange(
-                              index,
-                              "Medicine Name",
-                              e.target.value
-                            )
-                          }
-                        />
-                      </td>
-                      <td className="px-6 py-4">
-                        <input
-                          className="w-full border rounded p-1"
-                          value={medicine["Dosage Time"]}
-                          onChange={(e) =>
-                            handleTableChange(
-                              index,
-                              "Dosage Time",
-                              e.target.value
-                            )
-                          }
-                        />
-                      </td>
-                      <td className="px-6 py-4">
-                        <input
-                          className="w-full border rounded p-1"
-                          value={medicine["Instruction"]}
-                          onChange={(e) =>
-                            handleTableChange(
-                              index,
-                              "Instruction",
-                              e.target.value
-                            )
-                          }
-                        />
-                      </td>
-                    </tr>
-                  )
-                )}
-              </tbody>
-            </table>
+          {recording && (
+            <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
           )}
 
-          <button
-            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
-            onClick={downloadPDF}
-          >
-            Download PDF
-          </button>
+          <Button variant="default" onClick={uploadAudio} disabled={!audioBlob}>
+            Upload Audio
+          </Button>
         </div>
-      )}
-    </div>
-  );
-};
 
-export default prescriptionContent;
+        {audioURL && (
+          <div className="mt-4">
+            <audio controls src={audioURL} className="w-full" />
+          </div>
+        )}
+
+        {error && <p className="text-red-500 mt-2">{error}</p>}
+
+        {prescriptionData && (
+          <div
+            className="space-y-4 bg-white p-8 rounded-lg"
+            ref={prescriptionRef}
+          >
+            {/* Download button outside the PDF content */}
+            <div className="flex justify-end mb-4">
+              <Button onClick={downloadPDF}>
+                <Download className="mr-2 h-4 w-4" />
+                Download PDF
+              </Button>
+            </div>
+
+            {/* Prescription content for PDF */}
+            <div className="space-y-6 border p-6 rounded-lg">
+              <div className="text-center mb-8">
+                <h1 className="text-3xl font-bold mb-2">
+                  Medical Prescription
+                </h1>
+                {prescriptionData.hospital_name && (
+                  <p className="text-xl text-gray-700">
+                    {prescriptionData.hospital_name}
+                  </p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  {prescriptionData.doctor_name && (
+                    <p className="mb-2">
+                      <span className="font-semibold">Doctor:</span>{" "}
+                      {prescriptionData.doctor_name}
+                    </p>
+                  )}
+                  {prescriptionData.date && (
+                    <p className="mb-2">
+                      <span className="font-semibold">Date:</span>{" "}
+                      {prescriptionData.date}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  {prescriptionData.patient_name && (
+                    <p className="mb-2">
+                      <span className="font-semibold">Patient:</span>{" "}
+                      {prescriptionData.patient_name}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {prescriptionData.medicine_table &&
+                prescriptionData.medicine_table.length > 0 && (
+                  <Table className="border-collapse border border-gray-200">
+                    <TableHeader>
+                      <TableRow className="bg-gray-50">
+                        <TableHead className="border p-3 text-left font-semibold">
+                          Sr. No
+                        </TableHead>
+                        <TableHead className="border p-3 text-left font-semibold">
+                          Medicine Name
+                        </TableHead>
+                        <TableHead className="border p-3 text-left font-semibold">
+                          Timing
+                        </TableHead>
+                        <TableHead className="border p-3 text-left font-semibold">
+                          Instructions
+                        </TableHead>
+                        <TableHead className="border p-3 text-left font-semibold">
+                          Actions
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {prescriptionData.medicine_table.map(
+                        (medicine, index) => (
+                          <TableRow
+                            key={medicine["Sr.No"]}
+                            className="hover:bg-gray-50"
+                          >
+                            <TableCell className="border p-3">
+                              {medicine["Sr.No"]}
+                            </TableCell>
+                            <TableCell className="border p-3">
+                              {editingRow === index ? (
+                                <Input
+                                  value={
+                                    (editedValues as MedicineRow)[
+                                      "Medicine Name"
+                                    ] || ""
+                                  }
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      "Medicine Name",
+                                      e.target.value
+                                    )
+                                  }
+                                  className="w-full"
+                                />
+                              ) : (
+                                medicine["Medicine Name"]
+                              )}
+                            </TableCell>
+                            <TableCell className="border p-3">
+                              {editingRow === index ? (
+                                <Input
+                                  value={
+                                    (editedValues as MedicineRow)[
+                                      "Dosage Time"
+                                    ] || ""
+                                  }
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      "Dosage Time",
+                                      e.target.value
+                                    )
+                                  }
+                                  className="w-full"
+                                />
+                              ) : (
+                                medicine["Dosage Time"]
+                              )}
+                            </TableCell>
+                            <TableCell className="border p-3">
+                              {editingRow === index ? (
+                                <Input
+                                  value={
+                                    (editedValues as MedicineRow)[
+                                      "Instruction"
+                                    ] || ""
+                                  }
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      "Instruction",
+                                      e.target.value
+                                    )
+                                  }
+                                  className="w-full"
+                                />
+                              ) : (
+                                medicine["Instruction"]
+                              )}
+                            </TableCell>
+                            <TableCell className="border p-3">
+                              {editingRow === index ? (
+                                <div className="flex space-x-2">
+                                  <Button
+                                    size="sm"
+                                    variant="default"
+                                    onClick={() => handleSave(index)}
+                                  >
+                                    <Check className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={handleCancel}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleEdit(index)}
+                                >
+                                  <Edit2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        )
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

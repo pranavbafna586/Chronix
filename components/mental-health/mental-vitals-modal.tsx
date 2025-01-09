@@ -16,7 +16,6 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Slider } from "@/components/ui/slider";
 import {
   Select,
   SelectContent,
@@ -44,12 +43,12 @@ export function MentalVitalsModal({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const form = useForm({
     defaultValues: {
-      stress: 5,
-      anxiety: 5,
-      sleep: 8,
+      stress: "5",
+      anxiety: "5",
+      sleep: "8",
       diet: "moderate",
-      physicalActivity: 5,
-      socialSupport: 3,
+      physicalActivity: "5",
+      socialSupport: "3",
       reflection: "",
     },
   });
@@ -82,12 +81,12 @@ export function MentalVitalsModal({
   };
 
   const calculateScore = (data: {
-    stress: number;
-    anxiety: number;
-    sleep: number;
+    stress: string;
+    anxiety: string;
+    sleep: string;
     diet: "healthy" | "moderate" | "unhealthy";
-    physicalActivity: number;
-    socialSupport: number;
+    physicalActivity: string;
+    socialSupport: string;
   }) => {
     const weights = {
       stress: -0.2,
@@ -100,12 +99,13 @@ export function MentalVitalsModal({
 
     let score = 50; // Base score
 
-    score += (11 - data.stress) * weights.stress * 10; // Invert stress scale
-    score += (11 - data.anxiety) * weights.anxiety * 10; // Invert anxiety scale
-    score += (data.sleep / 12) * weights.sleep * 100; // Normalize sleep to 0-1
+    score += (11 - parseInt(data.stress)) * weights.stress * 10; // Invert stress scale
+    score += (11 - parseInt(data.anxiety)) * weights.anxiety * 10; // Invert anxiety scale
+    score += (parseFloat(data.sleep) / 12) * weights.sleep * 100; // Normalize sleep to 0-1
     score += weights.diet[data.diet] * 100;
-    score += (data.physicalActivity / 20) * weights.physicalActivity * 100; // Normalize physical activity to 0-1
-    score += data.socialSupport * weights.socialSupport * 20;
+    score +=
+      (parseFloat(data.physicalActivity) / 20) * weights.physicalActivity * 100; // Normalize physical activity to 0-1
+    score += parseInt(data.socialSupport) * weights.socialSupport * 20;
 
     return Math.round(Math.max(0, Math.min(100, score))); // Ensure score is between 0 and 100
   };
@@ -126,125 +126,109 @@ export function MentalVitalsModal({
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-6"
           >
-            <FormField
-              control={form.control}
-              name="stress"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Stress Level (1-10)</FormLabel>
-                  <FormControl>
-                    <Slider
-                      min={1}
-                      max={10}
-                      step={1}
-                      value={[field.value]}
-                      onValueChange={(value) => field.onChange(value[0])}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="anxiety"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Anxiety Level (1-10)</FormLabel>
-                  <FormControl>
-                    <Slider
-                      min={1}
-                      max={10}
-                      step={1}
-                      value={[field.value]}
-                      onValueChange={(value) => field.onChange(value[0])}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="sleep"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Sleep (hours)</FormLabel>
-                  <FormControl>
-                    <Slider
-                      min={0}
-                      max={12}
-                      step={0.5}
-                      value={[field.value]}
-                      onValueChange={(value) => field.onChange(value[0])}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="diet"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Diet Quality</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="stress"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Stress Level (1-10)</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select diet quality" />
-                      </SelectTrigger>
+                      <Input type="number" min="1" max="10" {...field} />
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="healthy">Healthy</SelectItem>
-                      <SelectItem value="moderate">Moderate</SelectItem>
-                      <SelectItem value="unhealthy">Unhealthy</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )}
-            />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="physicalActivity"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Physical Activity (hours/week)</FormLabel>
-                  <FormControl>
-                    <Slider
-                      min={0}
-                      max={20}
-                      step={0.5}
-                      value={[field.value]}
-                      onValueChange={(value) => field.onChange(value[0])}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="anxiety"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Anxiety Level (1-10)</FormLabel>
+                    <FormControl>
+                      <Input type="number" min="1" max="10" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="socialSupport"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Social Support (1-5)</FormLabel>
-                  <FormControl>
-                    <Slider
-                      min={1}
-                      max={5}
-                      step={1}
-                      value={[field.value]}
-                      onValueChange={(value) => field.onChange(value[0])}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="sleep"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sleep (hours)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="12"
+                        step="0.5"
+                        {...field}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="physicalActivity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Physical Activity (hours/week)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="20"
+                        step="0.5"
+                        {...field}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="socialSupport"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Social Support (1-5)</FormLabel>
+                    <FormControl>
+                      <Input type="number" min="1" max="5" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="diet"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Diet Quality</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select diet quality" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="healthy">Healthy</SelectItem>
+                        <SelectItem value="moderate">Moderate</SelectItem>
+                        <SelectItem value="unhealthy">Unhealthy</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}
