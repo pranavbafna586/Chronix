@@ -1,330 +1,293 @@
-"use client";
-
-import React, { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mic, MicOff, Download } from "lucide-react";
+import React, { useState, useRef } from "react";
 import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import "jspdf-autotable";
 
-interface Prescription {
-  hospitalName: string;
-  doctorName: string;
-  patientName: string;
-  medicines: {
-    id: number;
-    name: string;
-    dosage: string;
-    instructions: string;
-  }[];
-}
-
-export function prescriptionContent() {
-  const [isRecording, setIsRecording] = useState(false);
+const prescriptionContent: React.FC = () => {
+  const [recording, setRecording] = useState<boolean>(false);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [responseJson, setResponseJson] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
   const [audioURL, setAudioURL] = useState<string | null>(null);
-  const [prescription, setPrescription] = useState<Prescription | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const mediaRecorder = useRef<MediaRecorder | null>(null);
-  const audioChunks = useRef<Blob[]>([]);
+  const [editableData, setEditableData] = useState<any>(null);
 
-  useEffect(() => {
-    return () => {
-      if (audioURL) {
-        URL.revokeObjectURL(audioURL);
-      }
-    };
-  }, [audioURL]);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   const startRecording = async () => {
+    setError(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder.current = new MediaRecorder(stream);
-      audioChunks.current = [];
+      const mediaRecorder = new MediaRecorder(stream);
 
-      mediaRecorder.current.ondataavailable = (event) => {
-        audioChunks.current.push(event.data);
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunksRef.current.push(event.data);
       };
 
-      mediaRecorder.current.onstop = () => {
-        const audioBlob = new Blob(audioChunks.current, { type: "audio/wav" });
-        const url = URL.createObjectURL(audioBlob);
-        setAudioURL(url);
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: "audio/wav",
+        });
+        setAudioBlob(audioBlob);
+
+        const audioURL = URL.createObjectURL(audioBlob);
+        setAudioURL(audioURL);
+
+        audioChunksRef.current = [];
       };
 
-      mediaRecorder.current.start();
-      setIsRecording(true);
-      // Reset prescription when starting new recording
-      setPrescription(null);
-    } catch (error) {
-      console.error("Error accessing microphone:", error);
+      mediaRecorder.start();
+      mediaRecorderRef.current = mediaRecorder;
+      setRecording(true);
+    } catch (err) {
+      setError(
+        "Could not start recording. Please check your microphone permissions."
+      );
     }
   };
 
   const stopRecording = () => {
-    if (mediaRecorder.current && isRecording) {
-      mediaRecorder.current.stop();
-      setIsRecording(false);
-      // Start loading state and fetch prescription data
-      setIsLoading(true);
-      fetchPrescriptionData();
+    if (mediaRecorderRef.current?.state === "recording") {
+      mediaRecorderRef.current.stop();
+      setRecording(false);
     }
   };
 
-  const fetchPrescriptionData = () => {
-    // Simulating API call with mock data
-    setTimeout(() => {
-      setPrescription({
-        hospitalName: "City General Hospital",
-        doctorName: "Dr. Jane Smith",
-        patientName: "John Doe",
-        medicines: [
-          {
-            id: 1,
-            name: "Amoxicillin",
-            dosage: "500mg",
-            instructions: "Take twice daily",
-          },
-          {
-            id: 2,
-            name: "Ibuprofen",
-            dosage: "400mg",
-            instructions: "Take as needed for pain",
-          },
-        ],
-      });
-      setIsLoading(false);
-    }, 1500); // Increased timeout to simulate API call
+  const uploadAudio = async () => {
+    if (!audioBlob) {
+      setError("No audio recorded.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("audio", audioBlob, "recording.wav");
+
+    try {
+      const response = await fetch(
+        "https://flaskapphealthcare-1.onrender.com",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setResponseJson(data);
+      setEditableData(parseMedicineData(data)); // Set editable data
+    } catch (err: any) {
+      setError(`Failed to upload audio: ${err.message}`);
+    }
   };
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    field: keyof Prescription
-  ) => {
-    setPrescription((prev) =>
-      prev ? { ...prev, [field]: e.target.value } : null
+  const parseMedicineData = (response: any) => {
+    try {
+      if (!response?.data) return null;
+      const jsonMatch = response.data.match(/```json\n([\s\S]*)\n```/);
+      if (jsonMatch && jsonMatch[1]) {
+        return JSON.parse(jsonMatch[1]);
+      }
+      return null;
+    } catch (error) {
+      console.error("Error parsing response:", error);
+      return null;
+    }
+  };
+
+  const handleFieldChange = (field: string, value: string) => {
+    if (!editableData) return;
+    setEditableData({ ...editableData, [field]: value });
+  };
+
+  const handleTableChange = (index: number, key: string, value: string) => {
+    if (!editableData?.medicine_table) return;
+    const updatedTable = editableData.medicine_table.map(
+      (medicine: any, i: number) =>
+        i === index ? { ...medicine, [key]: value } : medicine
     );
+    setEditableData({ ...editableData, medicine_table: updatedTable });
   };
 
-  const handleMedicineChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    id: number,
-    field: string
-  ) => {
-    setPrescription((prev) =>
-      prev
-        ? {
-            ...prev,
-            medicines: prev.medicines.map((med) =>
-              med.id === id ? { ...med, [field]: e.target.value } : med
-            ),
-          }
-        : null
-    );
-  };
+  const downloadPDF = () => {
+    const doc = new jsPDF() as jsPDF & { autoTable: (options: any) => void };
+    autoTable(doc, {});
 
-  const downloadPrescription = () => {
-    if (!prescription) return;
+    if (editableData) {
+      doc.text("Prescription Details", 10, 10);
+      doc.text(`Hospital: ${editableData.hospital_name || ""}`, 10, 20);
+      doc.text(`Doctor: ${editableData.doctor_name || ""}`, 10, 30);
+      doc.text(`Patient: ${editableData.patient_name || ""}`, 10, 40);
+      doc.text(`Date: ${editableData.date || ""}`, 10, 50);
 
-    const doc = new jsPDF();
+      if (editableData.medicine_table) {
+        const tableData = editableData.medicine_table.map((row: any) => [
+          row["Sr.No"],
+          row["Medicine Name"],
+          row["Dosage Time"],
+          row["Instruction"],
+        ]);
 
-    // Add title
-    doc.setFontSize(20);
-    doc.setFont("helvetica", "bold");
-    doc.text("Medical Prescription", 105, 20, { align: "center" });
+        doc.autoTable({
+          head: [["Sr. No", "Medicine Name", "Timing", "Instructions"]],
+          body: tableData,
+          startY: 60,
+        });
+      }
+    }
 
-    // Add date
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
-    const date = new Date().toLocaleDateString();
-    doc.text(`Date: ${date}`, 20, 35);
-
-    // Add horizontal line
-    doc.setLineWidth(0.5);
-    doc.line(20, 40, 190, 40);
-
-    // Add medicines table
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("Medicine Details", 20, 55);
-
-    // Table headers
-    doc.setFontSize(12);
-    doc.text("Sr. No.", 20, 65);
-    doc.text("Medicine Name", 50, 65);
-    doc.text("Timing", 150, 65);
-
-    // Add line under headers
-    doc.line(20, 68, 190, 68);
-
-    // Add medicines data
-    doc.setFont("helvetica", "normal");
-    let yPos = 78;
-
-    prescription?.medicines.forEach((medicine, index) => {
-      doc.text((index + 1).toString(), 20, yPos);
-      doc.text(medicine.name, 50, yPos);
-      doc.text(medicine.dosage, 150, yPos);
-      yPos += 10;
-    });
-
-    // Add footer line
-    doc.line(20, yPos + 5, 190, yPos + 5);
-
-    // Add footer text
-    doc.setFontSize(10);
-    doc.setTextColor(128);
-    doc.text("This is a computer-generated prescription", 105, yPos + 15, {
-      align: "center",
-    });
-
-    // Save the PDF
-    const timestamp = new Date().getTime();
-    doc.save(`prescription_${timestamp}.pdf`);
+    doc.save("Prescription.pdf");
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
-      <CardHeader>
-        <CardTitle>Voice Prescription Assistant</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="flex items-center space-x-4">
-          <Button
-            onClick={isRecording ? stopRecording : startRecording}
-            variant={isRecording ? "destructive" : "default"}
+    <div className="p-4">
+      <h1 className="text-xl font-bold">Prescription Generator</h1>
+
+      <div className="mt-4">
+        {recording ? (
+          <button
+            className="bg-red-500 text-white px-4 py-2 rounded"
+            onClick={stopRecording}
           >
-            {isRecording ? (
-              <MicOff className="mr-2 h-4 w-4" />
-            ) : (
-              <Mic className="mr-2 h-4 w-4" />
-            )}
-            {isRecording ? "Stop Recording" : "Start Recording"}
-          </Button>
-          {isRecording && (
-            <div className="flex items-center">
-              <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-              <span className="ml-2 text-sm text-red-500">
-                Recording in progress...
-              </span>
-            </div>
-          )}
+            Stop Recording
+          </button>
+        ) : (
+          <button
+            className="bg-green-500 text-white px-4 py-2 rounded"
+            onClick={startRecording}
+          >
+            Start Recording
+          </button>
+        )}
+
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded ml-2"
+          onClick={uploadAudio}
+          disabled={!audioBlob}
+        >
+          Upload Audio
+        </button>
+      </div>
+
+      {audioURL && (
+        <div className="mt-4">
+          <h2 className="text-lg font-bold">Preview</h2>
+          <audio controls src={audioURL} className="w-full mt-2" />
         </div>
+      )}
 
-        {audioURL && (
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="text-sm font-medium mb-2">Recorded Audio</h3>
-            <audio src={audioURL} controls className="w-full" />
-          </div>
-        )}
+      {error && <p className="text-red-500 mt-2">{error}</p>}
 
-        {isLoading && (
-          <div className="text-center py-8">
-            <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full mx-auto mb-2" />
-            <p className="text-sm text-gray-500">
-              Processing audio and generating prescription...
-            </p>
-          </div>
-        )}
+      {editableData && (
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold mb-4">Prescription Details</h2>
 
-        {prescription && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Hospital Name</label>
-                <Input
-                  value={prescription.hospitalName}
-                  onChange={(e) => handleInputChange(e, "hospitalName")}
-                  className="w-full"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Doctor's Name</label>
-                <Input
-                  value={prescription.doctorName}
-                  onChange={(e) => handleInputChange(e, "doctorName")}
-                  className="w-full"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Patient's Name</label>
-                <Input
-                  value={prescription.patientName}
-                  onChange={(e) => handleInputChange(e, "patientName")}
-                  className="w-full"
-                />
-              </div>
-            </div>
+          <input
+            className="mb-2 border p-2 rounded w-full"
+            value={editableData.hospital_name || ""}
+            onChange={(e) => handleFieldChange("hospital_name", e.target.value)}
+            placeholder="Hospital Name"
+          />
+          <input
+            className="mb-2 border p-2 rounded w-full"
+            value={editableData.doctor_name || ""}
+            onChange={(e) => handleFieldChange("doctor_name", e.target.value)}
+            placeholder="Doctor Name"
+          />
+          <input
+            className="mb-2 border p-2 rounded w-full"
+            value={editableData.patient_name || ""}
+            onChange={(e) => handleFieldChange("patient_name", e.target.value)}
+            placeholder="Patient Name"
+          />
+          <input
+            className="mb-2 border p-2 rounded w-full"
+            value={editableData.date || ""}
+            onChange={(e) => handleFieldChange("date", e.target.value)}
+            placeholder="Date"
+          />
 
-            <div className="rounded-lg border">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-50">
-                    <TableHead className="w-[80px] font-semibold">
-                      Sr. No.
-                    </TableHead>
-                    <TableHead className="font-semibold">Medicine</TableHead>
-                    <TableHead className="font-semibold">Dosage</TableHead>
-                    <TableHead className="font-semibold">
-                      Instructions
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {prescription.medicines.map((medicine, index) => (
-                    <TableRow key={medicine.id} className="hover:bg-gray-50">
-                      <TableCell className="text-center font-medium">
-                        {index + 1}
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          value={medicine.name}
+          {editableData.medicine_table && (
+            <table className="min-w-full bg-white border border-gray-200 rounded-lg">
+              <thead>
+                <tr>
+                  <th className="px-6 py-3">Sr. No</th>
+                  <th className="px-6 py-3">Medicine Name</th>
+                  <th className="px-6 py-3">Timing</th>
+                  <th className="px-6 py-3">Instructions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {editableData.medicine_table.map(
+                  (medicine: any, index: number) => (
+                    <tr key={index}>
+                      <td className="px-6 py-4">
+                        <input
+                          className="w-full border rounded p-1"
+                          value={medicine["Sr.No"]}
                           onChange={(e) =>
-                            handleMedicineChange(e, medicine.id, "name")
+                            handleTableChange(index, "Sr.No", e.target.value)
                           }
-                          className="w-full"
                         />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          value={medicine.dosage}
+                      </td>
+                      <td className="px-6 py-4">
+                        <input
+                          className="w-full border rounded p-1"
+                          value={medicine["Medicine Name"]}
                           onChange={(e) =>
-                            handleMedicineChange(e, medicine.id, "dosage")
+                            handleTableChange(
+                              index,
+                              "Medicine Name",
+                              e.target.value
+                            )
                           }
-                          className="w-full"
                         />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          value={medicine.instructions}
+                      </td>
+                      <td className="px-6 py-4">
+                        <input
+                          className="w-full border rounded p-1"
+                          value={medicine["Dosage Time"]}
                           onChange={(e) =>
-                            handleMedicineChange(e, medicine.id, "instructions")
+                            handleTableChange(
+                              index,
+                              "Dosage Time",
+                              e.target.value
+                            )
                           }
-                          className="w-full"
                         />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <input
+                          className="w-full border rounded p-1"
+                          value={medicine["Instruction"]}
+                          onChange={(e) =>
+                            handleTableChange(
+                              index,
+                              "Instruction",
+                              e.target.value
+                            )
+                          }
+                        />
+                      </td>
+                    </tr>
+                  )
+                )}
+              </tbody>
+            </table>
+          )}
 
-            <div className="flex justify-end">
-              <Button onClick={downloadPrescription} className="w-auto">
-                <Download className="mr-2 h-4 w-4" />
-                Download Prescription
-              </Button>
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          <button
+            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
+            onClick={downloadPDF}
+          >
+            Download PDF
+          </button>
+        </div>
+      )}
+    </div>
   );
-}
+};
+
+export default prescriptionContent;

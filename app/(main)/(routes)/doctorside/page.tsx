@@ -4,7 +4,12 @@ import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
 import { contentComponents, type ContentKey } from "@/components/content";
-import { LayoutDashboard, Calendar, HomeIcon } from "lucide-react";
+import {
+  LayoutDashboard,
+  Calendar,
+  HomeIcon,
+  PillBottleIcon,
+} from "lucide-react";
 
 export default function Home() {
   const [activeContent, setActiveContent] = useState<ContentKey>("home");
@@ -16,8 +21,8 @@ export default function Home() {
     key: ContentKey;
   }[] = [
     { icon: LayoutDashboard, label: "Dashboard", key: "dashboard" },
-    { icon: Calendar, label: "Appointments", key: "diagnosis" },
-    { icon: HomeIcon, label: "Patients", key: "appointments" },
+    { icon: Calendar, label: "Appointments", key: "appointments" },
+    { icon: PillBottleIcon, label: "Prescription", key: "prescription" },
   ];
 
   return (
