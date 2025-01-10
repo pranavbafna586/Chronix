@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import ThreeDCard from "./ThreeDCard";
 
 const Hero = () => {
   return (
@@ -24,7 +23,14 @@ const Hero = () => {
             </Button>
           </div>
         </div>
-        <ThreeDCard />
+        {/* Right Content */}
+        <div className="md:w-1/2">
+          <img
+            src="image.png"
+            alt="Healthcare"
+            className="rounded-lg shadow-lg"
+          />
+        </div>
       </div>
     </section>
   );

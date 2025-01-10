@@ -5,7 +5,6 @@ import Hero from "@/components/home/Hero";
 import Features from "@/components/home/Features";
 import Guide from "@/components/home/Guide";
 import Pricing from "@/components/home/Pricing";
-import Review from "@/components/home/Review";
 import Footer from "@/components/home/Footer";
 import Header from "@/components/home/Header";
 // import Footer from "@/components/layout/Footer";
@@ -18,7 +17,6 @@ export default function Landing() {
       <Features />
       <Guide />
       <Pricing />
-      <Review />
       <Footer />
     </>
   );
