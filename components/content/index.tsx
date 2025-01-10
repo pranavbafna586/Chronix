@@ -11,6 +11,7 @@ import { prescriptionContent } from "./prescription-content";
 import MentalHealthPage from "./mentalhealth-content";
 import RiskAssessment from "./risk-content";
 import { DrAppointmentsContent } from "./dr-appointments-content";
+import  communityContent  from "./community-content";
 export const contentComponents = {
   home: HomeContent,
   dashboard: DashboardContent,
@@ -23,7 +24,7 @@ export const contentComponents = {
   mentalhealth: MentalHealthPage,
   prescription: prescriptionContent,
   education: EducationContent,
-  community: () => <div className="text-2xl font-bold">Community Forum</div>,
+  community: communityContent,
   drappointments: DrAppointmentsContent,
 };
 

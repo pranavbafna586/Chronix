@@ -4,12 +4,7 @@ import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
 import { contentComponents, type ContentKey } from "@/components/content";
-import {
-  LayoutDashboard,
-  Calendar,
-  HomeIcon,
-  PillBottleIcon,
-} from "lucide-react";
+import { LayoutDashboard, Calendar, PillBottleIcon } from "lucide-react";
 
 export default function Home() {
   const [activeContent, setActiveContent] = useState<ContentKey>("home");
