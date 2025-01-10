@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
 
 import Link from "next/link";
 
@@ -21,7 +22,6 @@ import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { TriangleAlert } from "lucide-react";
 
 const SignIn = () => {
@@ -30,6 +30,7 @@ const SignIn = () => {
   const [pending, setPending] = useState(false);
   const router = useRouter();
   const [error, setError] = useState("");
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,8 +41,16 @@ const SignIn = () => {
       password,
     });
     if (res?.ok) {
-      router.push("/home"); // Redirect to the dashboard after successful login
-      toast.success("Login successful");
+      const session = await fetch("/api/auth/session").then((res) =>
+        res.json()
+      );
+      const redirectUrl =
+        session?.user?.userType === "Doctor" ? "/doctorside" : "/home";
+      router.push(redirectUrl); // Redirect based on userType
+      toast({
+        title: "Login successful",
+        description: "You have successfully logged in.",
+      });
     } else if (res?.status === 401) {
       setError("Invalid Credentials");
       setPending(false);
@@ -56,7 +65,19 @@ const SignIn = () => {
     value: "github" | "google"
   ) => {
     event.preventDefault();
-    signIn(value, { callbackUrl: "/dashboard" }); // Redirect to dashboard after provider sign-in
+    signIn(value, { callbackUrl: "/" }).then(() => {
+      fetch("/api/auth/session")
+        .then((res) => res.json())
+        .then((session) => {
+          const redirectUrl =
+            session?.user?.userType === "Doctor" ? "/doctorside" : "/home";
+          router.push(redirectUrl); // Redirect based on userType
+          toast({
+            title: "Login successful",
+            description: "You have successfully logged in.",
+          });
+        });
+    });
   };
 
   return (
@@ -67,7 +88,9 @@ const SignIn = () => {
             className="text-gray-700 cursor-pointer hover:scale-110 transition"
             onClick={() => router.push("/")} // Redirect to home page
           />
-          <h1 className="text-lg font-semibold text-gray-700 ml-2">Back to Home</h1>
+          <h1 className="text-lg font-semibold text-gray-700 ml-2">
+            Back to Home
+          </h1>
         </div>
         <CardHeader>
           <CardTitle className="text-center text-xl font-bold text-gray-800">
@@ -111,7 +134,7 @@ const SignIn = () => {
           <Separator className="my-4" />
           <div className="flex my-2 justify-evenly mx-auto items-center">
             <Button
-              onClick={() => {}}
+              onClick={(e) => handleProvider(e, "google")}
               variant="outline"
               size="lg"
               className="bg-slate-300 hover:bg-slate-400 hover:scale-110"

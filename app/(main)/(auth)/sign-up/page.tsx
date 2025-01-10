@@ -10,17 +10,15 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
 
 import Link from "next/link";
-
-//react icons
 import { FaGithub } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { useState } from "react";
-import { toast } from "sonner";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, TriangleAlert } from "lucide-react";
-import { signIn } from "next-auth/react";
 
 const SignUp = () => {
   const [form, setForm] = useState({
@@ -28,31 +26,46 @@ const SignUp = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    userType: "Patient", // Default to Patient
   });
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setPending(true);
 
-    const res = await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    const data = await res.json();
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
 
-    if (res.ok) {
-      setPending(false);
-      toast.success(data.message);
-      router.push("/dashboard"); // Redirect to dashboard after successful sign-up
-    } else if (res.status === 400) {
-      setError(data.message);
-      setPending(false);
-    } else if (res.status === 500) {
-      setError(data.message);
+      if (res.ok) {
+        setPending(false);
+        toast({
+          title: "Account created",
+          description: "Your account has been successfully created.",
+        });
+        if (form.userType === "Doctor") {
+          router.push("/doctorside"); // Redirect to doctor side after successful sign-up
+        } else {
+          router.push("/home"); // Redirect to home after successful sign-up
+        }
+      } else if (res.status === 400) {
+        setError(data.message);
+        setPending(false);
+      } else if (res.status === 500) {
+        setError(data.message);
+        setPending(false);
+      }
+    } catch (error) {
+      console.error("Error during sign-up:", error);
+      setError("Something went wrong");
       setPending(false);
     }
   };
@@ -62,7 +75,19 @@ const SignUp = () => {
     value: "github" | "google"
   ) => {
     event.preventDefault();
-    signIn(value, { callbackUrl: "/" });
+    signIn(value, { callbackUrl: "/" }).then(() => {
+      fetch("/api/auth/session")
+        .then((res) => res.json())
+        .then((session) => {
+          const redirectUrl =
+            session?.user?.userType === "Doctor" ? "/doctorside" : "/home";
+          router.push(redirectUrl); // Redirect based on userType
+          toast({
+            title: "Login successful",
+            description: "You have successfully logged in.",
+          });
+        });
+    });
   };
 
   return (
@@ -132,6 +157,16 @@ const SignUp = () => {
               required
               className="p-2 border rounded-md"
             />
+            <select
+              disabled={pending}
+              value={form.userType}
+              onChange={(e) => setForm({ ...form, userType: e.target.value })}
+              required
+              className="p-2 border rounded-md w-full"
+            >
+              <option value="Patient">Patient</option>
+              <option value="Doctor">Doctor</option>
+            </select>
             <Button className="w-full" size="lg" disabled={pending}>
               {pending ? "Creating Account..." : "Continue"}
             </Button>
@@ -140,7 +175,7 @@ const SignUp = () => {
           <Separator className="my-4" />
           <div className="flex my-2 justify-evenly mx-auto items-center">
             <Button
-              onClick={() => {}}
+              onClick={(e) => handleProvider(e, "google")}
               variant="outline"
               size="lg"
               className="bg-slate-300 hover:bg-slate-400 hover:scale-110"

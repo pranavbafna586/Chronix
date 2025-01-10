@@ -1,9 +1,9 @@
-import mongoose from 'mongoose'
+import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGO;
 
 if (!MONGODB_URI) {
-    throw new Error (" please define mongo environment variable")
+    throw new Error("Please define the MONGO environment variable");
 }
 
 async function connectToDatabase() {
@@ -12,9 +12,18 @@ async function connectToDatabase() {
     }
     const opts = {
         bufferCommands: false,
+    };
+    try {
+        await mongoose.connect(MONGODB_URI!, opts);
+        return mongoose;
+    } catch (error) {
+        if (error instanceof mongoose.Error) {
+            console.error("Mongoose-specific error:", error.message);
+        } else {
+            console.error("General error:", error);
+        }
+        throw new Error("Could not connect to MongoDB. Please check your connection settings.");
     }
-    await mongoose.connect(MONGODB_URI!, opts);
-    return mongoose;
 }
 
 export default connectToDatabase;
