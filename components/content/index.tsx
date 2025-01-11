@@ -14,6 +14,7 @@ import { DrAppointmentsContent } from "./dr-appointments-content";
 import communityContent from "./community-content";
 import AiChatContent from "../ai-chat/ai-chat-content";
 import KanbanContent from "./kanban-content";
+import calanderContent from "./calander-content";
 export const contentComponents = {
   home: HomeContent,
   dashboard: DashboardContent,
@@ -30,6 +31,7 @@ export const contentComponents = {
   aichat: AiChatContent,
   kanban: KanbanContent,
   drappointments: DrAppointmentsContent,
+  calander: calanderContent,
 };
 
 export type ContentKey = keyof typeof contentComponents;

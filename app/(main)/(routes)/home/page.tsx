@@ -56,8 +56,9 @@ export default function Home() {
     { icon: Salad, label: "Diet Plan", key: "diet" },
     { icon: Brain, label: "Mental Health", key: "mentalhealth" },
     { icon: Cloud, label: "Progress Board", key: "kanban" },
-    { icon: GraduationCap, label: "Health Education", key: "education" },
+    { icon: Calendar, label: "Calander", key: "calander" },
     { icon: Users, label: "Community Forum", key: "community" },
+    { icon: GraduationCap, label: "Health Education", key: "education" },
   ];
 
   return (
