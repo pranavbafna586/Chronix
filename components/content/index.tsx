@@ -13,6 +13,7 @@ import RiskAssessment from "./risk-content";
 import { DrAppointmentsContent } from "./dr-appointments-content";
 import communityContent from "./community-content";
 import AiChatContent from "../ai-chat/ai-chat-content";
+import KanbanContent from "./kanban-content";
 export const contentComponents = {
   home: HomeContent,
   dashboard: DashboardContent,
@@ -27,6 +28,7 @@ export const contentComponents = {
   education: EducationContent,
   community: communityContent,
   aichat: AiChatContent,
+  kanban: KanbanContent,
   drappointments: DrAppointmentsContent,
 };
 
