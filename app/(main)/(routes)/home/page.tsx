@@ -18,6 +18,7 @@ import {
   HomeIcon,
   TestTube,
   PillBottleIcon,
+  PhoneCall,
 } from "lucide-react";
 
 export default function Home() {
@@ -50,6 +51,7 @@ export default function Home() {
     { icon: FileText, label: "Reports", key: "reports" },
     { icon: TestTube, label: "Lab Tests", key: "lab" },
     { icon: AlertTriangle, label: "AI Risk Assessment", key: "risk" },
+    { icon: PhoneCall, label: "Ai Companion", key: "aichat" },
     { icon: Salad, label: "Diet Plan", key: "diet" },
     { icon: Brain, label: "Mental Health", key: "mentalhealth" },
     { icon: GraduationCap, label: "Health Education", key: "education" },

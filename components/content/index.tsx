@@ -11,7 +11,8 @@ import { prescriptionContent } from "./prescription-content";
 import MentalHealthPage from "./mentalhealth-content";
 import RiskAssessment from "./risk-content";
 import { DrAppointmentsContent } from "./dr-appointments-content";
-import  communityContent  from "./community-content";
+import communityContent from "./community-content";
+import AiChatContent from "../ai-chat/ai-chat-content";
 export const contentComponents = {
   home: HomeContent,
   dashboard: DashboardContent,
@@ -25,6 +26,7 @@ export const contentComponents = {
   prescription: prescriptionContent,
   education: EducationContent,
   community: communityContent,
+  aichat: AiChatContent,
   drappointments: DrAppointmentsContent,
 };
 
