@@ -15,6 +15,7 @@ import {
 import { User, Chat, Group } from "@/types/chat";
 import { CreateGroupDialog } from "./create-group-dialog";
 import { format } from "date-fns";
+import { UserProfileSidebar } from "./user-profile-sidebar";
 
 interface SidebarProps {
   currentUser: User;
@@ -35,6 +36,14 @@ export function Sidebar({
 }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreateGroupDialog, setShowCreateGroupDialog] = useState(false);
+  const [showUserProfile, setShowUserProfile] = useState(false);
+
+  // Add handler for profile updates
+  const handleUpdateProfile = (updatedUser: User) => {
+    // You might want to implement this in your parent component
+    console.log("Profile updated:", updatedUser);
+    setShowUserProfile(false);
+  };
 
   const filteredChats = chats.filter(
     (chat) =>
@@ -49,7 +58,7 @@ export function Sidebar({
       <div className="p-4 flex items-center justify-between">
         <Avatar
           className="h-10 w-10 cursor-pointer"
-          onClick={onOpenUserProfile}
+          onClick={() => setShowUserProfile(true)}
         >
           <AvatarImage src={currentUser.avatar} />
           <AvatarFallback>{currentUser.name[0]}</AvatarFallback>
@@ -141,6 +150,13 @@ export function Sidebar({
         onOpenChange={setShowCreateGroupDialog}
         currentUser={currentUser}
         onCreateGroup={onCreateGroup}
+      />
+
+      <UserProfileSidebar
+        open={showUserProfile}
+        onOpenChange={setShowUserProfile}
+        user={currentUser}
+        onUpdateProfile={handleUpdateProfile}
       />
     </div>
   );

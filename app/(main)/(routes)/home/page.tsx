@@ -55,7 +55,7 @@ export default function Home() {
     { icon: PhoneCall, label: "Ai Companion", key: "aichat" },
     { icon: Salad, label: "Diet Plan", key: "diet" },
     { icon: Brain, label: "Mental Health", key: "mentalhealth" },
-    { icon: Cloud, label: "Kanban Board", key: "kanban" },
+    { icon: Cloud, label: "Progress Board", key: "kanban" },
     { icon: GraduationCap, label: "Health Education", key: "education" },
     { icon: Users, label: "Community Forum", key: "community" },
   ];

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, X } from "lucide-react";
 import { User, Group } from "@/types/chat";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,27 @@ export function CreateGroupDialog({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [groupName, setGroupName] = useState("");
+
+  useEffect(() => {
+    console.log("Create Group Modal state changed:", open);
+    if (!open) {
+      document.body.style.pointerEvents = 'auto';
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      document.body.style.pointerEvents = 'auto';
+      document.body.style.overflow = 'auto';
+    };
+  }, [open]);
+
+  const handleOpenChange = (newOpen: boolean) => {
+    console.log("Create group dialog state changing to:", newOpen);
+    if (!newOpen) {
+      document.body.style.pointerEvents = 'auto';
+      document.body.style.overflow = 'auto';
+    }
+    onOpenChange(newOpen);
+  };
 
   // Mock users data
   const users: User[] = [
@@ -87,8 +108,11 @@ export function CreateGroupDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} onClose={() => onOpenChange(false)}> {/* Added onClose */}
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent 
+        className="sm:max-w-md"
+        onClick={(e) => e.stopPropagation()}
+      >
         <DialogHeader>
           <DialogTitle>Create a New Group</DialogTitle>
         </DialogHeader>

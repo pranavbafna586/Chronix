@@ -47,6 +47,8 @@ export function Chat() {
   const [isRecording, setIsRecording] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
   const currentUser: User = {
     id: "1",
@@ -88,9 +90,35 @@ export function Chat() {
     // Add more chats as over here
   ]);
 
+  const isNearBottom = () => {
+    const container = messagesContainerRef.current;
+    if (!container) return true;
+
+    const threshold = 100; // pixels from bottom
+    return (
+      container.scrollHeight - container.scrollTop - container.clientHeight <
+      threshold
+    );
+  };
+
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (shouldAutoScroll && messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop =
+        messagesContainerRef.current.scrollHeight;
+    }
+  }, [messages, shouldAutoScroll]);
+
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      setShouldAutoScroll(isNearBottom());
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleSend = () => {
     if (!newMessage.trim() || !selectedChat) return;
@@ -106,8 +134,8 @@ export function Chat() {
 
     setMessages([...messages, message]);
     setNewMessage("");
+    setShouldAutoScroll(true);
 
-    // Update last message in chat list
     setChats(
       chats.map((chat) =>
         chat.id === selectedChat.id
@@ -121,8 +149,6 @@ export function Chat() {
     const chat = chats.find((c) => c.id === chatId);
     if (chat) {
       setSelectedChat(chat);
-      // Here you would typically fetch messages for this chat from your backend
-      // For now, we'll just use the mock messages
       setMessages([
         {
           id: "1",
@@ -203,7 +229,6 @@ export function Chat() {
     });
 
     setShowForwardDialog(false);
-    // Automatically open the first chat where the message was forwarded
     if (targetChats.length > 0) {
       handleSelectChat(targetChats[0].id);
     }
@@ -224,8 +249,6 @@ export function Chat() {
   };
 
   const handleUpdateUserProfile = (updatedUser: User) => {
-    // Update the current user's profile
-    // In a real app, you'd send this to the backend
     console.log("Updating user profile:", updatedUser);
     setShowUserProfileSidebar(false);
   };
@@ -286,9 +309,17 @@ export function Chat() {
     }
   };
 
+  const handleAudioStop = (audioBlob: Blob) => {
+    console.log("Audio recorded:", audioBlob);
+    setIsRecording(false);
+  };
+
+  const handleAudioCancel = () => {
+    setIsRecording(false);
+  };
+
   return (
     <div className="flex h-[600px] bg-[#F8F9FA] rounded-lg shadow-lg mx-auto my-4 max-w-[1000px]">
-      {/* Sidebar - reduced width */}
       <div className="w-[280px] border-r bg-white">
         <Sidebar
           currentUser={currentUser}
@@ -300,11 +331,9 @@ export function Chat() {
         />
       </div>
 
-      {/* Chat Area - simplified */}
       <div className="flex-1 flex flex-col">
         {selectedChat ? (
           <>
-            {/* Simplified Header */}
             <div className="flex items-center p-2 bg-white border-b">
               <Avatar className="h-8 w-8">
                 <AvatarImage src={selectedChat.avatar} />
@@ -320,8 +349,24 @@ export function Chat() {
               </div>
             </div>
 
-            {/* Messages - reduced padding */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+            <div
+              ref={messagesContainerRef}
+              className="flex-1 p-3 space-y-2 overflow-y-auto scrollbar-hide"
+              style={{
+                msOverflowStyle: "none", // IE and Edge
+                scrollbarWidth: "none", // Firefox
+                WebkitOverflowScrolling: "touch",
+              }}
+            >
+              <style jsx global>{`
+                .scrollbar-hide::-webkit-scrollbar {
+                  display: none;
+                }
+                .scrollbar-hide {
+                  -ms-overflow-style: none;
+                  scrollbar-width: none;
+                }
+              `}</style>
               {messages.map((message) => (
                 <MessageBubble
                   key={message.id}
@@ -349,32 +394,44 @@ export function Chat() {
                   setEditing={setEditingMessage}
                 />
               ))}
-              <div ref={messagesEndRef} />
             </div>
 
-            {/* Simplified Input */}
             <div className="p-2 bg-white border-t">
-              <div className="flex items-center gap-2">
-                <Input
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Type a message"
-                  className="flex-1"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSend();
-                    }
-                  }}
+              {isRecording ? (
+                <AudioRecorder
+                  onStop={handleAudioStop}
+                  onCancel={handleAudioCancel}
                 />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => newMessage.trim() && handleSend()}
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder="Type a message"
+                    className="flex-1"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSend();
+                      }
+                    }}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsRecording(true)}
+                  >
+                    <Mic className="h-5 w-5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => newMessage.trim() && handleSend()}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </div>
           </>
         ) : (
@@ -386,7 +443,6 @@ export function Chat() {
         )}
       </div>
 
-      {/* Keep necessary dialogs */}
       <ForwardMessageDialog
         open={showForwardDialog}
         onOpenChange={setShowForwardDialog}

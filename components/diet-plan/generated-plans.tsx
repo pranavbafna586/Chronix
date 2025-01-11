@@ -60,44 +60,41 @@ export function GeneratedPlans({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Button variant="outline" onClick={onBack}>
-          Back to Form
+    <div className="space-y-8">
+      <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-md">
+        <Button 
+          variant="outline" 
+          onClick={onBack}
+          className="border-violet-200"
+        >
+          ← Back to Form
         </Button>
-        <h2 className="text-xl font-semibold justify-center flex text-center">
-          Choose Your Preferred Plan
+        <h2 className="text-2xl font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
+          Choose Your Plan
         </h2>
       </div>
 
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="plans">
           {(provided) => (
-            <div
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-              className="space-y-4"
-            >
+            <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-6">
               {orderedPlans.map((plan, index) => (
-                <Draggable
-                  key={plan.id}
-                  draggableId={String(plan.id)}
-                  index={index}
-                >
+                <Draggable key={plan.id} draggableId={String(plan.id)} index={index}>
                   {(provided) => (
                     <div
                       ref={provided.innerRef}
                       {...provided.draggableProps}
                       {...provided.dragHandleProps}
+                      className="transform transition-all duration-200 hover:scale-[1.02]"
                     >
-                      <Card>
-                        <CardHeader>
+                      <Card className="border-violet-100 shadow-lg hover:shadow-xl">
+                        <CardHeader className="bg-gradient-to-r from-violet-50 to-indigo-50">
                           <CardTitle>{plan.name}</CardTitle>
                           <CardDescription>
                             {plan.calories} calories | ₹{plan.cost}/week
                           </CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-6">
                           <div className="space-y-4">
                             <div className="grid grid-cols-3 gap-4 text-sm">
                               <div>
@@ -157,8 +154,8 @@ export function GeneratedPlans({
                               )}
                             </div>
 
-                            <Button
-                              className="w-full"
+                            <Button 
+                              className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white mt-6"
                               onClick={() => onSelect(plan)}
                             >
                               Select This Plan

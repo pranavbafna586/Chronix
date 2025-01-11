@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // Add useEffect import
 import {
   Plus,
   X,
@@ -60,6 +60,10 @@ const KanbanContent = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTask, setEditedTask] = useState<Task | null>(null);
 
+  // Add new state for column editing
+  const [editingColumnId, setEditingColumnId] = useState<string | null>(null);
+  const [editingColumnTitle, setEditingColumnTitle] = useState("");
+
   // Task Modal Form State
   const [newTask, setNewTask] = useState<Partial<Task>>({
     title: "",
@@ -69,6 +73,41 @@ const KanbanContent = () => {
     dueDate: "",
     status: "To Do",
   });
+
+  // Add new handlers for modal cleanup
+  const handleCreateTaskModalChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      // Force cleanup when closing
+      document.body.style.pointerEvents = "auto";
+      document.body.style.overflow = "auto";
+      setNewTask({}); // Reset form
+    }
+    setIsTaskModalOpen(newOpen);
+  };
+
+  const handleTaskDetailsModalChange = (newOpen: boolean) => {
+    console.log("Task details dialog state changing to:", newOpen);
+    if (!newOpen) {
+      document.body.style.pointerEvents = "auto";
+      document.body.style.overflow = "auto";
+      setSelectedTask(null);
+      setIsEditing(false);
+      setEditedTask(null);
+    }
+    setSelectedTask(null);
+  };
+
+  useEffect(() => {
+    console.log("Task Details Modal state changed:", !!selectedTask);
+    if (!selectedTask) {
+      document.body.style.pointerEvents = "auto";
+      document.body.style.overflow = "auto";
+    }
+    return () => {
+      document.body.style.pointerEvents = "auto";
+      document.body.style.overflow = "auto";
+    };
+  }, [selectedTask]);
 
   const handleDragStart = (task: Task) => {
     setDraggedTask(task);
@@ -168,23 +207,67 @@ const KanbanContent = () => {
     setColumns(columns.filter((column) => column.id !== columnId));
   };
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value.toLowerCase();
+    setSearchQuery(query);
+  };
+
+  // Add new column handler
+  const handleAddColumn = () => {
+    const newColumn: Column = {
+      id: Math.random().toString(36).substr(2, 9),
+      title: "New Column",
+      tasks: [],
+    };
+    setColumns([...columns, newColumn]);
+  };
+
+  // Add column name edit handlers
+  const handleStartEditColumn = (column: Column) => {
+    setEditingColumnId(column.id);
+    setEditingColumnTitle(column.title);
+  };
+
+  const handleColumnTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditingColumnTitle(e.target.value);
+  };
+
+  const handleColumnTitleSubmit = (columnId: string) => {
+    if (editingColumnTitle.trim()) {
+      handleEditColumn(columnId, editingColumnTitle.trim());
+    }
+    setEditingColumnId(null);
+    setEditingColumnTitle("");
+  };
+
+  // Update the filtering logic for tasks
+  const filterTasks = (task: Task, query: string) => {
+    return (
+      task.title.toLowerCase().includes(query) ||
+      task.description.toLowerCase().includes(query) ||
+      task.labels.some((label) => label.toLowerCase().includes(query)) ||
+      task.priority.toLowerCase().includes(query) ||
+      task.status.toLowerCase().includes(query)
+    );
+  };
+
   return (
     <div className="min-h-screen p-6">
       {/* Enhanced Header */}
       <div className="mb-8 bg-white rounded-xl shadow-lg p-6 bg-gradient-to-r from-violet-50 to-indigo-50">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
-            Kanban Board
+            Progress Board
           </h1>
           <div className="flex gap-4 w-full sm:w-auto">
             <div className="relative flex-1 sm:flex-initial">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 type="text"
-                placeholder="Search tasks..."
+                placeholder="Search tasks, labels, priority..."
                 className="pl-10 w-full border-2 border-violet-100 focus:border-violet-300 focus:ring-2 focus:ring-violet-200 rounded-lg"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
               />
             </div>
             <Button
@@ -193,6 +276,14 @@ const KanbanContent = () => {
             >
               <Plus className="h-4 w-4 mr-2" />
               New Task
+            </Button>
+            <Button
+              onClick={handleAddColumn}
+              variant="outline"
+              className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              New Column
             </Button>
           </div>
         </div>
@@ -220,9 +311,29 @@ const KanbanContent = () => {
             }}
           >
             <div className="flex justify-between items-center mb-6">
-              <h2 className="font-bold text-lg text-gray-800">
-                {column.title}
-              </h2>
+              {editingColumnId === column.id ? (
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={editingColumnTitle}
+                    onChange={handleColumnTitleChange}
+                    onBlur={() => handleColumnTitleSubmit(column.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleColumnTitleSubmit(column.id);
+                      }
+                    }}
+                    className="h-8 w-40 px-2 text-lg font-bold"
+                    autoFocus
+                  />
+                </div>
+              ) : (
+                <h2
+                  className="font-bold text-lg text-gray-800 cursor-pointer hover:text-violet-600 transition-colors"
+                  onClick={() => handleStartEditColumn(column)}
+                >
+                  {column.title}
+                </h2>
+              )}
               <div className="flex items-center gap-2">
                 <span className="bg-violet-100 px-3 py-1 rounded-full text-sm text-violet-600 font-medium">
                   {column.tasks.length}
@@ -233,13 +344,7 @@ const KanbanContent = () => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
                     <DropdownMenuItem
-                      onClick={() => {
-                        const newTitle = prompt(
-                          "Enter new column title:",
-                          column.title
-                        );
-                        if (newTitle) handleEditColumn(column.id, newTitle);
-                      }}
+                      onClick={() => handleStartEditColumn(column)}
                     >
                       <Edit className="h-4 w-4 mr-2" />
                       Edit Column
@@ -259,15 +364,7 @@ const KanbanContent = () => {
             {/* Enhanced Tasks */}
             <div className="space-y-4">
               {column.tasks
-                .filter(
-                  (task) =>
-                    task.title
-                      .toLowerCase()
-                      .includes(searchQuery.toLowerCase()) ||
-                    task.description
-                      .toLowerCase()
-                      .includes(searchQuery.toLowerCase())
-                )
+                .filter((task) => filterTasks(task, searchQuery))
                 .map((task) => (
                   <div
                     key={task.id}
@@ -365,7 +462,7 @@ const KanbanContent = () => {
       </div>
 
       {/* Enhanced Modal Styling */}
-      <Dialog open={isTaskModalOpen} onOpenChange={setIsTaskModalOpen}>
+      <Dialog open={isTaskModalOpen} onOpenChange={handleCreateTaskModalChange}>
         <DialogContent className="sm:max-w-[425px] bg-gradient-to-br from-white to-violet-50">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-violet-800">
@@ -422,6 +519,37 @@ const KanbanContent = () => {
                 }
               />
             </div>
+            <div className="grid gap-2">
+              <Label htmlFor="labels">Labels (comma-separated)</Label>
+              <Input
+                id="labels"
+                placeholder="Add labels, separated by commas"
+                value={newTask.labels?.join(", ") || ""}
+                onChange={(e) =>
+                  setNewTask({
+                    ...newTask,
+                    labels: e.target.value
+                      .split(",")
+                      .map((label) => label.trim())
+                      .filter(Boolean),
+                  })
+                }
+                className="border-2 focus:border-violet-400 focus:ring-violet-200"
+              />
+              {newTask.labels && newTask.labels.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {newTask.labels.map((label, index) => (
+                    <span
+                      key={index}
+                      className="bg-violet-100 text-violet-800 text-sm px-2 py-1 rounded-full flex items-center gap-1"
+                    >
+                      <Tag className="h-3 w-3" />
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <DialogFooter>
             <Button
@@ -442,32 +570,16 @@ const KanbanContent = () => {
       </Dialog>
 
       {/* Enhanced Task Details Modal */}
-      <Dialog
-        open={!!selectedTask}
-        onOpenChange={() => {
-          setSelectedTask(null);
-          setIsEditing(false);
-          setEditedTask(null);
-        }}
-      >
-        <DialogContent className="sm:max-w-[600px] bg-gradient-to-br from-white to-violet-50 p-0 overflow-hidden">
+      <Dialog open={!!selectedTask} onOpenChange={handleTaskDetailsModalChange}>
+        <DialogContent
+          className="sm:max-w-[600px] bg-gradient-to-br from-white to-violet-50 p-0 overflow-hidden"
+          onClick={(e) => e.stopPropagation()} // Add click propagation prevention
+        >
           <div className="relative">
             {/* Header with gradient background */}
             <div className="bg-gradient-to-r from-violet-600 to-indigo-600 p-6">
               <DialogTitle className="text-2xl font-bold text-white m-0 flex items-center justify-between">
                 {isEditing ? "Edit Task" : "Task Details"}
-                <div className="flex items-center gap-2">
-                  {!isEditing && (
-                    <Button
-                      variant="ghost"
-                      className="hover:bg-white/20 text-white"
-                      onClick={() => setIsEditing(true)}
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </Button>
-                  )}
-                </div>
               </DialogTitle>
             </div>
 
@@ -495,7 +607,119 @@ const KanbanContent = () => {
                         className="border-2 focus:border-violet-400 focus:ring-violet-200"
                       />
                     </div>
-                    {/* ...other edit fields... */}
+
+                    <div className="grid gap-2">
+                      <Label
+                        htmlFor="edit-description"
+                        className="text-sm font-semibold text-gray-700"
+                      >
+                        Description
+                      </Label>
+                      <Input
+                        id="edit-description"
+                        value={editedTask?.description || ""}
+                        onChange={(e) =>
+                          setEditedTask((prev) => ({
+                            ...prev!,
+                            description: e.target.value,
+                          }))
+                        }
+                        className="border-2 focus:border-violet-400 focus:ring-violet-200"
+                      />
+                    </div>
+
+                    <div className="grid gap-2">
+                      <Label
+                        htmlFor="edit-priority"
+                        className="text-sm font-semibold text-gray-700"
+                      >
+                        Priority
+                      </Label>
+                      <select
+                        id="edit-priority"
+                        value={editedTask?.priority || "medium"}
+                        onChange={(e) =>
+                          setEditedTask((prev) => ({
+                            ...prev!,
+                            priority: e.target.value as Task["priority"],
+                          }))
+                        }
+                        className="w-full border-2 rounded-md p-2 focus:border-violet-400 focus:ring-violet-200"
+                      >
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                      </select>
+                    </div>
+
+                    <div className="grid gap-2">
+                      <Label
+                        htmlFor="edit-date"
+                        className="text-sm font-semibold text-gray-700"
+                      >
+                        Due Date
+                      </Label>
+                      <Input
+                        id="edit-date"
+                        type="date"
+                        value={editedTask?.dueDate || ""}
+                        onChange={(e) =>
+                          setEditedTask((prev) => ({
+                            ...prev!,
+                            dueDate: e.target.value,
+                          }))
+                        }
+                        className="border-2 focus:border-violet-400 focus:ring-violet-200"
+                      />
+                    </div>
+
+                    <div className="grid gap-2">
+                      <Label
+                        htmlFor="edit-labels"
+                        className="text-sm font-semibold text-gray-700"
+                      >
+                        Labels (comma-separated)
+                      </Label>
+                      <Input
+                        id="edit-labels"
+                        value={editedTask?.labels.join(", ") || ""}
+                        onChange={(e) =>
+                          setEditedTask((prev) => ({
+                            ...prev!,
+                            labels: e.target.value
+                              .split(",")
+                              .map((label) => label.trim()),
+                          }))
+                        }
+                        className="border-2 focus:border-violet-400 focus:ring-violet-200"
+                      />
+                    </div>
+
+                    <div className="grid gap-2">
+                      <Label
+                        htmlFor="edit-status"
+                        className="text-sm font-semibold text-gray-700"
+                      >
+                        Status
+                      </Label>
+                      <select
+                        id="edit-status"
+                        value={editedTask?.status || ""}
+                        onChange={(e) =>
+                          setEditedTask((prev) => ({
+                            ...prev!,
+                            status: e.target.value,
+                          }))
+                        }
+                        className="w-full border-2 rounded-md p-2 focus:border-violet-400 focus:ring-violet-200"
+                      >
+                        {columns.map((column) => (
+                          <option key={column.id} value={column.title}>
+                            {column.title}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-6">

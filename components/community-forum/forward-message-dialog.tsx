@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +28,27 @@ export function ForwardMessageDialog({
 }: ForwardMessageDialogProps) {
   const [selectedChats, setSelectedChats] = useState<Chat[]>([]);
 
+  useEffect(() => {
+    console.log("Forward Modal state changed:", open);
+    if (!open) {
+      document.body.style.pointerEvents = 'auto';
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      document.body.style.pointerEvents = 'auto';
+      document.body.style.overflow = 'auto';
+    };
+  }, [open]);
+
+  const handleOpenChange = (newOpen: boolean) => {
+    console.log("Forward dialog state changing to:", newOpen);
+    if (!newOpen) {
+      document.body.style.pointerEvents = 'auto';
+      document.body.style.overflow = 'auto';
+    }
+    onOpenChange(newOpen);
+  };
+
   const handleForward = () => {
     if (message && selectedChats.length > 0) {
       onForward(message, selectedChats);
@@ -45,8 +66,11 @@ export function ForwardMessageDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} onClose={() => onOpenChange(false)}> {/* Added onClose */}
-      <DialogContent className="sm:max-w-[425px]">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent 
+        className="sm:max-w-[425px]"
+        onClick={(e) => e.stopPropagation()}
+      >
         <DialogHeader>
           <DialogTitle>Forward Message</DialogTitle>
         </DialogHeader>

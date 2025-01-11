@@ -28,6 +28,7 @@ interface PrescriptionData {
   doctor_name?: string;
   patient_name?: string;
   date?: string;
+  prescription_duration?: string;
   medicine_table: MedicineRow[];
 }
 
@@ -299,7 +300,6 @@ export function prescriptionContent() {
             className="space-y-4 bg-white p-8 rounded-lg"
             ref={prescriptionRef}
           >
-            {/* PDF content */}
             <div
               className="space-y-6 border p-6 rounded-lg"
               ref={pdfContentRef}
@@ -327,6 +327,12 @@ export function prescriptionContent() {
                     <p className="mb-2">
                       <span className="font-semibold">Date:</span>{" "}
                       {prescriptionData.date}
+                    </p>
+                  )}
+                  {prescriptionData.prescription_duration && (
+                    <p className="mb-2">
+                      <span className="font-semibold">Duration:</span>{" "}
+                      {prescriptionData.prescription_duration}
                     </p>
                   )}
                 </div>

@@ -130,7 +130,7 @@ def process_audio():
 
 def extract_medicine_data(file_data, mime_type):
     """
-    Process the audio file using the Gemini model to extract medicine names and timings.
+    Process the audio file using the Gemini model to extract medicine names, timings, and duration.
 
     Args:
         file_data: BytesIO object containing the audio file data.
@@ -146,11 +146,12 @@ def extract_medicine_data(file_data, mime_type):
 
         prompt = """
         Analyze the provided audio file for transcription and extract the following details:
-        - Hospital name
+        - Hospital name is always going to be "Namo Hospital" so don't change it.
         - Hospital logo
-        - Doctor's name
-        - Patient's name
-        - Date
+        - Doctor's name is always going to be "Dr. Pranav Bafna" so don't change it.
+        - Patient's name (if not available, default to "Patient")
+        - Date is always going to be today's date.
+        - Prescription Duration (in days)
         
         Additionally, extract the medicines and their details in the following table format:
         - col-0: Sr. No.
@@ -165,6 +166,7 @@ def extract_medicine_data(file_data, mime_type):
             "doctor_name": "Dr. Example",
             "patient_name": "John Doe",
             "date": "YYYY-MM-DD",
+            "prescription_duration": "7 days",
             "medicine_table": [
                 {"Sr.No": 1, "Medicine Name": "Medicine1", "Dosage Time": "Morning", "Instruction": "Take after food"},
                 {"Sr.No": 2, "Medicine Name": "Medicine2", "Dosage Time": "Afternoon", "Instruction": "Take as needed for pain"},
@@ -172,7 +174,7 @@ def extract_medicine_data(file_data, mime_type):
             ]
         }
 
-        Return the extracted details in english language only.
+        Return the extracted details in english language only. The prescription duration should be extracted from the audio if mentioned, otherwise default to 7 days.
         """
 
         result = model.generate_content([myfile, prompt])
