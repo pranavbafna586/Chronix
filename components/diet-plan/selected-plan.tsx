@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { jsPDF } from "jspdf";
+import "jspdf-autotable";
 
 interface Plan {
   id: number;
@@ -44,12 +45,14 @@ export function SelectedPlan({ plan, onBack }: SelectedPlanProps) {
 
     // Add title
     doc.setFontSize(20);
+    doc.setTextColor("#333");
     doc.text(plan.name, 20, 20);
 
     // Add summary
     doc.setFontSize(12);
+    doc.setTextColor("#555");
     doc.text(`Calories: ${plan.calories}`, 20, 35);
-    doc.text(`Weekly Cost: $${plan.cost}`, 20, 45);
+    doc.text(`Weekly Cost: ₹${plan.cost}`, 20, 45);
     doc.text(
       `Macros - Protein: ${plan.macros.protein}%, Carbs: ${plan.macros.carbs}%, Fat: ${plan.macros.fat}%`,
       20,
@@ -60,10 +63,12 @@ export function SelectedPlan({ plan, onBack }: SelectedPlanProps) {
     let yPos = 75;
     plan.meals.forEach((meal) => {
       doc.setFontSize(14);
+      doc.setTextColor("#333");
       doc.text(`Day ${meal.day}`, 20, yPos);
       yPos += 10;
 
       doc.setFontSize(12);
+      doc.setTextColor("#555");
       doc.text(`Breakfast: ${meal.breakfast}`, 30, yPos);
       yPos += 10;
       doc.text(`Lunch: ${meal.lunch}`, 30, yPos);
@@ -98,7 +103,7 @@ export function SelectedPlan({ plan, onBack }: SelectedPlanProps) {
         <CardHeader>
           <CardTitle>{plan.name}</CardTitle>
           <CardDescription>
-            {plan.calories} calories | ${plan.cost}/week
+            {plan.calories} calories | ₹{plan.cost}/week
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -63,6 +63,8 @@ export function DietPlanForm() {
   const [step, setStep] = useState<"form" | "plans" | "selected">("form");
   const [generatedPlans, setGeneratedPlans] = useState<any[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -78,54 +80,31 @@ export function DietPlanForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // Simulate API call to generate plans
-    const mockPlans = [
-      {
-        id: 1,
-        name: "Balanced Nutrition Plan",
-        calories: 2000,
-        macros: { protein: 30, carbs: 40, fat: 30 },
-        cost: 80,
-        meals: Array.from({ length: values.planDuration }, (_, i) => ({
-          day: i + 1,
-          breakfast: "Oatmeal with fruits",
-          lunch: "Grilled chicken salad",
-          dinner: "Salmon with quinoa",
-          snacks: ["Almonds", "Greek yogurt"],
-        })),
-      },
-      {
-        id: 2,
-        name: "High Protein Plan",
-        calories: 2200,
-        macros: { protein: 40, carbs: 30, fat: 30 },
-        cost: 95,
-        meals: Array.from({ length: values.planDuration }, (_, i) => ({
-          day: i + 1,
-          breakfast: "Protein smoothie",
-          lunch: "Turkey wrap",
-          dinner: "Lean beef stir-fry",
-          snacks: ["Protein bar", "Cottage cheese"],
-        })),
-      },
-      {
-        id: 3,
-        name: "Plant-Based Plan",
-        calories: 1800,
-        macros: { protein: 25, carbs: 50, fat: 25 },
-        cost: 70,
-        meals: Array.from({ length: values.planDuration }, (_, i) => ({
-          day: i + 1,
-          breakfast: "Tofu scramble",
-          lunch: "Chickpea curry",
-          dinner: "Lentil pasta",
-          snacks: ["Trail mix", "Hummus with vegetables"],
-        })),
-      },
-    ];
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch("http://localhost:5000/generate-plan", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(values),
+      });
 
-    setGeneratedPlans(mockPlans);
-    setStep("plans");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to generate plans");
+      }
+
+      const data = await response.json();
+      setGeneratedPlans(data);
+      setStep("plans");
+    } catch (error) {
+      setError((error as any).message);
+      console.error("Error generating plans:", error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   if (step === "plans") {
@@ -348,7 +327,7 @@ export function DietPlanForm() {
               <FormLabel>What is your weekly grocery budget?</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <span className="absolute left-3 top-2.5">$</span>
+                  <span className="absolute left-3 top-2.5">₹</span>
                   <Input
                     type="number"
                     placeholder="100"
@@ -363,8 +342,10 @@ export function DietPlanForm() {
           )}
         />
 
-        <Button type="submit" className="w-full">
-          Generate Plan
+        {error && <p className="text-red-500">{error}</p>}
+
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? "Generating..." : "Generate Plan"}
         </Button>
       </form>
     </Form>

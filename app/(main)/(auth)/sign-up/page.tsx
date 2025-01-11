@@ -20,7 +20,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, TriangleAlert } from "lucide-react";
 
-const SignUp = () => {
+const SignUp = ({ onSignUp }: { onSignUp: () => void }) => {
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -51,6 +51,7 @@ const SignUp = () => {
           title: "Account created",
           description: "Your account has been successfully created.",
         });
+        onSignUp(); // Call the onSignUp prop after successful sign-up
         if (form.userType === "Doctor") {
           router.push("/doctorside"); // Redirect to doctor side after successful sign-up
         } else {

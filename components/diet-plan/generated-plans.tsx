@@ -94,7 +94,7 @@ export function GeneratedPlans({
                         <CardHeader>
                           <CardTitle>{plan.name}</CardTitle>
                           <CardDescription>
-                            {plan.calories} calories | ${plan.cost}/week
+                            {plan.calories} calories | ₹{plan.cost}/week
                           </CardDescription>
                         </CardHeader>
                         <CardContent>

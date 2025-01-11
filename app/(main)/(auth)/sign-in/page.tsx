@@ -25,8 +25,8 @@ import { useRouter } from "next/navigation";
 import { TriangleAlert } from "lucide-react";
 
 const SignIn = () => {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+  const [email, setEmail] = useState<string>("name2@gmail.com");
+  const [password, setPassword] = useState<string>("name2@gmail.com");
   const [pending, setPending] = useState(false);
   const router = useRouter();
   const [error, setError] = useState("");
