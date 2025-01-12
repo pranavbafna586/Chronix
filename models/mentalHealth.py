@@ -12,8 +12,8 @@ import io
 import os
 
 # Configure Gemini API
-GOOGLE_API_KEY = "AIzaSyAFCHmz7n8PVvM2fjd3KVd1FBv5kPCIyQk"
-genai.configure(api_key=GOOGLE_API_KEY)
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY1')
+genai.configure(api_key=GEMINI_API_KEY)
 
 # Initialize Flask app
 app = Flask(__name__)
