@@ -15,6 +15,7 @@ import communityContent from "./community-content";
 import AiChatContent from "../ai-chat/ai-chat-content";
 import KanbanContent from "./kanban-content";
 import calanderContent from "./calander-content";
+import PatientDashboard from "./patient-stat-content";
 export const contentComponents = {
   home: HomeContent,
   dashboard: DashboardContent,
@@ -32,6 +33,7 @@ export const contentComponents = {
   kanban: KanbanContent,
   drappointments: DrAppointmentsContent,
   calander: calanderContent,
+  patientStat: PatientDashboard,
 };
 
 export type ContentKey = keyof typeof contentComponents;

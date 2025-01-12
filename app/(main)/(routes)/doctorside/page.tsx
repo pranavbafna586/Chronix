@@ -4,7 +4,12 @@ import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
 import { contentComponents, type ContentKey } from "@/components/content";
-import { LayoutDashboard, Calendar, PillBottleIcon } from "lucide-react";
+import {
+  LayoutDashboard,
+  Calendar,
+  PillBottleIcon,
+  UserRoundPen,
+} from "lucide-react";
 
 export default function Home() {
   const [activeContent, setActiveContent] = useState<ContentKey>("home");
@@ -18,11 +23,12 @@ export default function Home() {
     { icon: LayoutDashboard, label: "Dashboard", key: "dashboard" },
     { icon: Calendar, label: "DrAppointments", key: "drappointments" },
     { icon: PillBottleIcon, label: "Prescription", key: "prescription" },
+    { icon: UserRoundPen, label: "Patient Statistics", key: "patientStat" },
   ];
 
   return (
     <div className="min-h-screen">
-      <Header />
+      <Header score={0} />
       <div className="flex pt-16">
         <Sidebar
           activeContent={activeContent}

@@ -89,20 +89,10 @@ export function MentalFitnessDashboard({
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-center">
-        <div className="w-full max-w-md">
-          <RadialChart
-            score={mentalScore || 0}
-            remark={getRemark(mentalScore || 0)}
-            lastReading={
-              lastSubmission ? lastSubmission.toLocaleString() : "N/A"
-            }
-          />
-        </div>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {metrics.map((metric, index) => {
+    <div className="container mx-auto p-4">
+      {/* First Row with 4 Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        {metrics.slice(0, 4).map((metric, index) => {
           const Icon = metric.icon;
           return (
             <Card
@@ -113,7 +103,7 @@ export function MentalFitnessDashboard({
                 <CardTitle className="text-sm font-medium">
                   {metric.title}
                 </CardTitle>
-                <Icon className="h-8 w-8" /> {/* Increased icon size */}
+                <Icon className="h-8 w-8" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{metric.value}</div>
@@ -124,6 +114,46 @@ export function MentalFitnessDashboard({
             </Card>
           );
         })}
+      </div>
+
+      {/* Second Row with 2 Columns */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* First Column with Radial Chart */}
+        <div className="flex justify-center items-center">
+          <RadialChart
+            score={mentalScore || 0}
+            remark={getRemark(mentalScore || 0)}
+            lastReading={
+              lastSubmission ? lastSubmission.toLocaleString() : "N/A"
+            }
+          />
+        </div>
+
+        {/* Second Column with 4 Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {metrics.slice(4).map((metric, index) => {
+            const Icon = metric.icon;
+            return (
+              <Card
+                key={index}
+                className={`flex flex-col justify-between transition-all duration-300 ease-in-out hover:shadow-lg hover:scale-105 ${metric.color}`}
+              >
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    {metric.title}
+                  </CardTitle>
+                  <Icon className="h-8 w-8" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{metric.value}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Last updated: {lastSubmission?.toLocaleString() || "Never"}
+                  </p>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

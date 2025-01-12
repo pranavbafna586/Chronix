@@ -93,7 +93,9 @@ interface RadialChartProps {
 
 export function RadialChart({ score, remark, lastReading }: RadialChartProps) {
   return (
-    <Card className="w-full max-w-sm p-4">
+    <Card className="w-full lg:col-span-2 p-8">
+      {" "}
+      {/* Adjusted size and span */}
       <CardHeader>
         <CardTitle className="text-center text-xl font-bold">
           Mental Fitness Score

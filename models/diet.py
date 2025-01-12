@@ -15,7 +15,7 @@ CORS(app)
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY1')
 
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-1.5-flash")
+model = genai.GenerativeModel("gemini-1.5-pro")
 
 def create_prompt(form_data):
     return f"""Generate a detailed diet plan based on the following preferences:
@@ -79,7 +79,7 @@ def validate_and_fix_plan(plan):
 
     return plan
 
-@app.route('/generate-plan', methods=['POST'])
+@app.route('https://dietflask.onrender.com/generate-plan', methods=['POST'])
 def generate_plan():
     try:
         form_data = request.json

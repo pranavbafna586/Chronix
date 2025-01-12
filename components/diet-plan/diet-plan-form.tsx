@@ -83,13 +83,16 @@ export function DietPlanForm() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("http://localhost:5000/generate-plan", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      });
+      const response = await fetch(
+        "https://dietflask.onrender.com/generate-plan",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(values),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();

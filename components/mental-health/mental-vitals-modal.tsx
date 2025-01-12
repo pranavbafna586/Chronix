@@ -15,13 +15,8 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
 import { Mic, Square } from "lucide-react";
 import { useForm } from "react-hook-form";
 import axios from "axios"; // Import axios
@@ -87,7 +82,7 @@ export function MentalVitalsModal({
     try {
       // Submit form data to /predict endpoint
       const predictResponse = await axios.post(
-        "http://127.0.0.1:5000/predict",
+        "https://mentalhealthflask.onrender.com/predict",
         {
           gender: data.gender,
           Occupation: data.occupation,
@@ -108,7 +103,7 @@ export function MentalVitalsModal({
           formData.append("audio", audioBlob, "recording.webm");
 
           const voiceResponse = await axios.post(
-            "http://127.0.0.1:5000/voice_analysis",
+            "https://mentalhealthflask.onrender.com/voice_analysis",
             formData,
             {
               headers: {
@@ -158,20 +153,22 @@ export function MentalVitalsModal({
                       <FormLabel className="text-sm font-semibold text-purple-700 dark:text-purple-300">
                         Gender
                       </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full bg-white/50 dark:bg-slate-800/50 border-2 border-purple-200 dark:border-purple-900">
-                            <SelectValue placeholder="Select gender" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Male">Male</SelectItem>
-                          <SelectItem value="Female">Female</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-1"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="Male" id="gender-male" />
+                            <label htmlFor="gender-male">Male</label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="Female" id="gender-female" />
+                            <label htmlFor="gender-female">Female</label>
+                          </div>
+                        </RadioGroup>
+                      </FormControl>
                     </FormItem>
                   )}
                 />
@@ -184,23 +181,28 @@ export function MentalVitalsModal({
                       <FormLabel className="text-sm font-semibold text-purple-700 dark:text-purple-300">
                         Mood Swings
                       </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full bg-white/50 dark:bg-slate-800/50 border-2 border-purple-200 dark:border-purple-900">
-                            <SelectValue placeholder="Select level" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-1"
+                        >
                           {["Medium", "Low", "High"].map((value) => (
-                            <SelectItem key={value} value={value}>
-                              {value}
-                            </SelectItem>
+                            <div
+                              key={value}
+                              className="flex items-center space-x-2"
+                            >
+                              <RadioGroupItem
+                                value={value}
+                                id={`mood-${value.toLowerCase()}`}
+                              />
+                              <label htmlFor={`mood-${value.toLowerCase()}`}>
+                                {value}
+                              </label>
+                            </div>
                           ))}
-                        </SelectContent>
-                      </Select>
+                        </RadioGroup>
+                      </FormControl>
                     </FormItem>
                   )}
                 />
@@ -213,16 +215,12 @@ export function MentalVitalsModal({
                       <FormLabel className="text-sm font-semibold text-purple-700 dark:text-purple-300">
                         Occupation
                       </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full bg-white/50 dark:bg-slate-800/50 border-2 border-purple-200 dark:border-purple-900">
-                            <SelectValue placeholder="Select occupation" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-1"
+                        >
                           {[
                             "Corporate",
                             "Student",
@@ -230,12 +228,23 @@ export function MentalVitalsModal({
                             "Housewife",
                             "Others",
                           ].map((value) => (
-                            <SelectItem key={value} value={value}>
-                              {value}
-                            </SelectItem>
+                            <div
+                              key={value}
+                              className="flex items-center space-x-2"
+                            >
+                              <RadioGroupItem
+                                value={value}
+                                id={`occupation-${value.toLowerCase()}`}
+                              />
+                              <label
+                                htmlFor={`occupation-${value.toLowerCase()}`}
+                              >
+                                {value}
+                              </label>
+                            </div>
                           ))}
-                        </SelectContent>
-                      </Select>
+                        </RadioGroup>
+                      </FormControl>
                     </FormItem>
                   )}
                 />
@@ -250,23 +259,28 @@ export function MentalVitalsModal({
                       <FormLabel className="text-sm font-semibold text-purple-700 dark:text-purple-300">
                         Interest in Work
                       </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full bg-white/50 dark:bg-slate-800/50 border-2 border-purple-200 dark:border-purple-900">
-                            <SelectValue placeholder="Select option" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-1"
+                        >
                           {["No", "Maybe", "Yes"].map((value) => (
-                            <SelectItem key={value} value={value}>
-                              {value}
-                            </SelectItem>
+                            <div
+                              key={value}
+                              className="flex items-center space-x-2"
+                            >
+                              <RadioGroupItem
+                                value={value}
+                                id={`work-${value.toLowerCase()}`}
+                              />
+                              <label htmlFor={`work-${value.toLowerCase()}`}>
+                                {value}
+                              </label>
+                            </div>
                           ))}
-                        </SelectContent>
-                      </Select>
+                        </RadioGroup>
+                      </FormControl>
                     </FormItem>
                   )}
                 />
@@ -279,23 +293,28 @@ export function MentalVitalsModal({
                       <FormLabel className="text-sm font-semibold text-purple-700 dark:text-purple-300">
                         Changes in Habits
                       </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full bg-white/50 dark:bg-slate-800/50 border-2 border-purple-200 dark:border-purple-900">
-                            <SelectValue placeholder="Select option" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-1"
+                        >
                           {["No", "Yes", "Maybe"].map((value) => (
-                            <SelectItem key={value} value={value}>
-                              {value}
-                            </SelectItem>
+                            <div
+                              key={value}
+                              className="flex items-center space-x-2"
+                            >
+                              <RadioGroupItem
+                                value={value}
+                                id={`habits-${value.toLowerCase()}`}
+                              />
+                              <label htmlFor={`habits-${value.toLowerCase()}`}>
+                                {value}
+                              </label>
+                            </div>
                           ))}
-                        </SelectContent>
-                      </Select>
+                        </RadioGroup>
+                      </FormControl>
                     </FormItem>
                   )}
                 />
@@ -308,23 +327,28 @@ export function MentalVitalsModal({
                       <FormLabel className="text-sm font-semibold text-purple-700 dark:text-purple-300">
                         Social Weakness
                       </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full bg-white/50 dark:bg-slate-800/50 border-2 border-purple-200 dark:border-purple-900">
-                            <SelectValue placeholder="Select option" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-1"
+                        >
                           {["Yes", "No", "Maybe"].map((value) => (
-                            <SelectItem key={value} value={value}>
-                              {value}
-                            </SelectItem>
+                            <div
+                              key={value}
+                              className="flex items-center space-x-2"
+                            >
+                              <RadioGroupItem
+                                value={value}
+                                id={`social-${value.toLowerCase()}`}
+                              />
+                              <label htmlFor={`social-${value.toLowerCase()}`}>
+                                {value}
+                              </label>
+                            </div>
                           ))}
-                        </SelectContent>
-                      </Select>
+                        </RadioGroup>
+                      </FormControl>
                     </FormItem>
                   )}
                 />
@@ -371,6 +395,10 @@ export function MentalVitalsModal({
                         )}
                       </div>
                     </div>
+                    <Textarea
+                      placeholder="Write your reflection here..."
+                      {...field}
+                    />
                   </div>
                 </FormItem>
               )}
