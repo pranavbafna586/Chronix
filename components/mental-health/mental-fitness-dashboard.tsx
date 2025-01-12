@@ -16,58 +16,73 @@ import { RadialChart } from "@/components/mental-health/radial-chart";
 interface MentalFitnessDashboardProps {
   lastSubmission: Date | null;
   mentalScore: number | null;
+  voiceAnalysis: {
+    Clarity: string;
+    Control: string;
+    Crispness: string;
+    Energy_range: string;
+    Liveliness: string;
+    Pause: string;
+    Smoothness: string;
+    Speech: string;
+  } | null;
 }
 
 export function MentalFitnessDashboard({
   lastSubmission,
   mentalScore,
+  voiceAnalysis,
 }: MentalFitnessDashboardProps) {
+  const storedVoiceAnalysis =
+    JSON.parse(localStorage.getItem("voiceAnalysisResponse") || "{}")
+      .voice_analysis || {};
+
   const metrics = [
     {
       title: "Smoothness",
-      value: "94.42%",
+      value: storedVoiceAnalysis.Smoothness || "N/A",
       icon: Activity,
       color: "bg-blue-100 text-blue-800",
     },
     {
       title: "Control",
-      value: "89.42%",
+      value: storedVoiceAnalysis.Control || "N/A",
       icon: Brain,
       color: "bg-green-100 text-green-800",
     },
     {
       title: "Liveliness",
-      value: "0.45 octaves",
+      value: storedVoiceAnalysis.Liveliness || "N/A",
       icon: Heart,
       color: "bg-red-100 text-red-800",
     },
     {
       title: "Energy Range",
-      value: "5.64 dB",
+      value: storedVoiceAnalysis.Energy_range || "N/A",
       icon: BarChart,
       color: "bg-yellow-100 text-yellow-800",
     },
     {
       title: "Clarity",
-      value: "280 ms",
+      value: storedVoiceAnalysis.Clarity || "N/A",
       icon: Music,
       color: "bg-purple-100 text-purple-800",
     },
     {
       title: "Crispness",
-      value: "0.48 kHz²",
+      value: storedVoiceAnalysis.Crispness || "N/A",
       icon: Volume2,
       color: "bg-indigo-100 text-indigo-800",
     },
     {
       title: "Speech",
-      value: "Normal",
+      value: storedVoiceAnalysis.Speech || "N/A",
       icon: Clock,
       color: "bg-teal-100 text-teal-800",
     },
     {
       title: "Pause",
-      value: "Regular",
+      value: storedVoiceAnalysis.Pause || "N/A",
       icon: Pause,
       color: "bg-pink-100 text-pink-800",
     },

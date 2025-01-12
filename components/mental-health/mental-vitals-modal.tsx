@@ -15,17 +15,11 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Mic, Square } from "lucide-react";
 import { useForm } from "react-hook-form";
+import axios from "axios"; // Import axios
 
 interface MentalVitalsModalProps {
   open: boolean;
@@ -43,12 +37,12 @@ export function MentalVitalsModal({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const form = useForm({
     defaultValues: {
-      stress: "5",
-      anxiety: "5",
-      sleep: "8",
-      diet: "moderate",
-      physicalActivity: "5",
-      socialSupport: "3",
+      gender: "Male",
+      occupation: "Corporate",
+      moodSwings: "Medium",
+      changesHabits: "No",
+      workInterest: "No",
+      socialWeakness: "Yes",
       reflection: "",
     },
   });
@@ -56,7 +50,9 @@ export function MentalVitalsModal({
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: "audio/webm", // Specify the desired format
+      });
       mediaRecorderRef.current = mediaRecorder;
 
       const chunks: BlobPart[] = [];
@@ -64,6 +60,8 @@ export function MentalVitalsModal({
       mediaRecorder.onstop = () => {
         const blob = new Blob(chunks, { type: "audio/webm" });
         setAudioBlob(blob);
+        // Stop all tracks in the stream
+        stream.getTracks().forEach((track) => track.stop());
       };
 
       mediaRecorder.start();
@@ -80,154 +78,279 @@ export function MentalVitalsModal({
     }
   };
 
-  const calculateScore = (data: {
-    stress: string;
-    anxiety: string;
-    sleep: string;
-    diet: "healthy" | "moderate" | "unhealthy";
-    physicalActivity: string;
-    socialSupport: string;
-  }) => {
-    const weights = {
-      stress: -0.2,
-      anxiety: -0.2,
-      sleep: 0.15,
-      diet: { healthy: 0.15, moderate: 0.1, unhealthy: 0 },
-      physicalActivity: 0.15,
-      socialSupport: 0.15,
-    };
+  const handleSubmit = async (data: any) => {
+    try {
+      // Submit form data to /predict endpoint
+      const predictResponse = await axios.post(
+        "http://127.0.0.1:5000/predict",
+        {
+          gender: data.gender,
+          Occupation: data.occupation,
+          Mood_Swings: data.moodSwings,
+          Changes_Habits: data.changesHabits,
+          Work_Interest: data.workInterest,
+          Social_Weakness: data.socialWeakness,
+        }
+      );
 
-    let score = 50; // Base score
+      const score = predictResponse.data.mental_fitness_score;
 
-    score += (11 - parseInt(data.stress)) * weights.stress * 10; // Invert stress scale
-    score += (11 - parseInt(data.anxiety)) * weights.anxiety * 10; // Invert anxiety scale
-    score += (parseFloat(data.sleep) / 12) * weights.sleep * 100; // Normalize sleep to 0-1
-    score += weights.diet[data.diet] * 100;
-    score +=
-      (parseFloat(data.physicalActivity) / 20) * weights.physicalActivity * 100; // Normalize physical activity to 0-1
-    score += parseInt(data.socialSupport) * weights.socialSupport * 20;
+      // Submit audio file if available
+      if (audioBlob) {
+        try {
+          const formData = new FormData();
+          // Make sure to append with the correct filename and type
+          formData.append("audio", audioBlob, "recording.webm");
 
-    return Math.round(Math.max(0, Math.min(100, score))); // Ensure score is between 0 and 100
-  };
+          const voiceResponse = await axios.post(
+            "http://127.0.0.1:5000/voice_analysis",
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
 
-  const handleSubmit = (data: any) => {
-    const score = calculateScore(data);
-    onSubmit(data, score);
+          console.log("Voice Analysis Response:", voiceResponse.data);
+          localStorage.setItem(
+            "voiceAnalysisResponse",
+            JSON.stringify(voiceResponse.data)
+          );
+          // Handle the voice analysis response as needed
+        } catch (voiceError) {
+          console.error("Error in voice analysis:", voiceError);
+        }
+      }
+
+      // Call the onSubmit prop with the form data and score
+      onSubmit(data, score);
+    } catch (error) {
+      console.error("Error submitting data:", error);
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Record Mental Vitals</DialogTitle>
+          <DialogTitle>Mental Health Assessment</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-6"
           >
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="stress"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Stress Level (1-10)</FormLabel>
-                    <FormControl>
-                      <Input type="number" min="1" max="10" {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="anxiety"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Anxiety Level (1-10)</FormLabel>
-                    <FormControl>
-                      <Input type="number" min="1" max="10" {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="sleep"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Sleep (hours)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="0"
-                        max="12"
-                        step="0.5"
-                        {...field}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="physicalActivity"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Physical Activity (hours/week)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="0"
-                        max="20"
-                        step="0.5"
-                        {...field}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="socialSupport"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Social Support (1-5)</FormLabel>
-                    <FormControl>
-                      <Input type="number" min="1" max="5" {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="diet"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Diet Quality</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="gender"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3 border border-gray-500 p-3 rounded-md">
+                      <FormLabel className="text-base font-semibold">
+                        Gender
+                      </FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select diet quality" />
-                        </SelectTrigger>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-1"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="Male" id="gender-male" />
+                            <label htmlFor="gender-male">Male</label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="Female" id="gender-female" />
+                            <label htmlFor="gender-female">Female</label>
+                          </div>
+                        </RadioGroup>
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="healthy">Healthy</SelectItem>
-                        <SelectItem value="moderate">Moderate</SelectItem>
-                        <SelectItem value="unhealthy">Unhealthy</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormItem>
-                )}
-              />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="moodSwings"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3 border border-gray-500 p-3 rounded-md">
+                      <FormLabel className="text-base font-semibold">
+                        Mood Swings
+                      </FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-1"
+                        >
+                          {["Medium", "Low", "High"].map((value) => (
+                            <div
+                              key={value}
+                              className="flex items-center space-x-2"
+                            >
+                              <RadioGroupItem
+                                value={value}
+                                id={`mood-${value.toLowerCase()}`}
+                              />
+                              <label htmlFor={`mood-${value.toLowerCase()}`}>
+                                {value}
+                              </label>
+                            </div>
+                          ))}
+                        </RadioGroup>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="occupation"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3 border border-gray-500 p-3 rounded-md">
+                      <FormLabel className="text-base font-semibold">
+                        Occupation
+                      </FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-1"
+                        >
+                          {[
+                            "Corporate",
+                            "Student",
+                            "Business",
+                            "Housewife",
+                            "Others",
+                          ].map((value) => (
+                            <div
+                              key={value}
+                              className="flex items-center space-x-2"
+                            >
+                              <RadioGroupItem
+                                value={value}
+                                id={`occupation-${value.toLowerCase()}`}
+                              />
+                              <label
+                                htmlFor={`occupation-${value.toLowerCase()}`}
+                              >
+                                {value}
+                              </label>
+                            </div>
+                          ))}
+                        </RadioGroup>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="space-y-6 ">
+                <FormField
+                  control={form.control}
+                  name="workInterest"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3 border border-gray-500 p-3 rounded-md">
+                      <FormLabel className="text-base font-semibold">
+                        Interest in Work
+                      </FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-1"
+                        >
+                          {["No", "Maybe", "Yes"].map((value) => (
+                            <div
+                              key={value}
+                              className="flex items-center space-x-2"
+                            >
+                              <RadioGroupItem
+                                value={value}
+                                id={`work-${value.toLowerCase()}`}
+                              />
+                              <label htmlFor={`work-${value.toLowerCase()}`}>
+                                {value}
+                              </label>
+                            </div>
+                          ))}
+                        </RadioGroup>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="changesHabits"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3 border border-gray-500 p-3 rounded-md">
+                      <FormLabel className="text-base font-semibold">
+                        Changes in Habits
+                      </FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-1"
+                        >
+                          {["No", "Yes", "Maybe"].map((value) => (
+                            <div
+                              key={value}
+                              className="flex items-center space-x-2"
+                            >
+                              <RadioGroupItem
+                                value={value}
+                                id={`habits-${value.toLowerCase()}`}
+                              />
+                              <label htmlFor={`habits-${value.toLowerCase()}`}>
+                                {value}
+                              </label>
+                            </div>
+                          ))}
+                        </RadioGroup>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="socialWeakness"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3 border border-gray-500 p-3 rounded-md">
+                      <FormLabel className="text-base font-semibold">
+                        Social Weakness
+                      </FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-1"
+                        >
+                          {["Yes", "No", "Maybe"].map((value) => (
+                            <div
+                              key={value}
+                              className="flex items-center space-x-2"
+                            >
+                              <RadioGroupItem
+                                value={value}
+                                id={`social-${value.toLowerCase()}`}
+                              />
+                              <label htmlFor={`social-${value.toLowerCase()}`}>
+                                {value}
+                              </label>
+                            </div>
+                          ))}
+                        </RadioGroup>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
 
             <FormField
@@ -235,15 +358,11 @@ export function MentalVitalsModal({
               name="reflection"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tell me about your day</FormLabel>
                   <div className="space-y-2">
-                    <FormControl>
-                      <Textarea
-                        placeholder="Type your reflection here..."
-                        {...field}
-                      />
-                    </FormControl>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-7">
+                      <FormLabel className="text-base font-semibold">
+                        Tell me about your day
+                      </FormLabel>
                       <Button
                         type="button"
                         variant="outline"

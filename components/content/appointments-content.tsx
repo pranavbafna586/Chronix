@@ -200,30 +200,31 @@ export const AppointmentsContent = () => {
   };
 
   return (
-    <div className="space-y-6 px-4 py-8 max-w-7xl mx-auto">
+    <div className="space-y-8 px-6 py-10 max-w-7xl mx-auto bg-gray-50/50 dark:bg-gray-900/50 rounded-2xl">
       <div className="flex justify-center items-center">
-        <div className="space-y-4 mb-8">
-          {/* Search Input with Search Icon */}
-          <div className="relative max-w-lg mx-auto">
-            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-[#0047AB] size-5" />
+        <div className="space-y-6 mb-8 w-full max-w-4xl">
+          {/* Updated Search Input with improved icon visibility */}
+          <div className="relative max-w-2xl mx-auto group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors duration-200 pointer-events-none z-10" />
             <Input
               type="text"
               placeholder="Search doctors or specialties..."
-              className="pl-10 border-2 border-[#0047AB] text-[#0047AB] focus:ring-[#0047AB]"
+              className="pl-12 h-12 text-lg border-2 border-blue-100 dark:border-blue-900 rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-300 focus-visible:ring-blue-400 dark:focus-visible:ring-blue-600 focus-visible:border-blue-400"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
 
-          {/* Filters Section */}
-          <div className="flex flex-wrap gap-4">
+          {/* Enhanced Filters Section */}
+          <div className="flex flex-wrap gap-4 justify-center">
+            {/* Filter selects with improved styling */}
             <Select
               value={filters.city}
               onValueChange={(value: string) =>
                 setFilters({ ...filters, city: value })
               }
             >
-              <SelectTrigger className="w-[180px] border-2 border-[#0047AB] text-[#0047AB]">
+              <SelectTrigger className="w-[180px] border-2 border-blue-100 dark:border-blue-900 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-300">
                 <SelectValue placeholder="City" />
               </SelectTrigger>
               <SelectContent>
@@ -232,14 +233,13 @@ export const AppointmentsContent = () => {
                 <SelectItem value="Chicago">Chicago</SelectItem>
               </SelectContent>
             </Select>
-
             <Select
               value={filters.specialty}
               onValueChange={(value: any) =>
                 setFilters({ ...filters, specialty: value })
               }
             >
-              <SelectTrigger className="w-[180px] border-2 border-[#0047AB] text-[#0047AB]">
+              <SelectTrigger className="w-[180px] border-2 border-blue-100 dark:border-blue-900 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-300">
                 <SelectValue placeholder="Specialty" />
               </SelectTrigger>
               <SelectContent>
@@ -257,7 +257,7 @@ export const AppointmentsContent = () => {
                 setFilters({ ...filters, language: value })
               }
             >
-              <SelectTrigger className="w-[180px] border-2 border-[#0047AB] text-[#0047AB]">
+              <SelectTrigger className="w-[180px] border-2 border-blue-100 dark:border-blue-900 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-300">
                 <SelectValue placeholder="Language" />
               </SelectTrigger>
               <SelectContent>
@@ -273,7 +273,7 @@ export const AppointmentsContent = () => {
                 setFilters({ ...filters, gender: value })
               }
             >
-              <SelectTrigger className="w-[180px] border-2 border-[#0047AB] text-[#0047AB]">
+              <SelectTrigger className="w-[180px] border-2 border-blue-100 dark:border-blue-900 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-300">
                 <SelectValue placeholder="Gender" />
               </SelectTrigger>
               <SelectContent>
@@ -285,7 +285,7 @@ export const AppointmentsContent = () => {
             <Button
               variant="outline"
               onClick={clearFilters}
-              className="border-2 border-[#0047AB] text-[#0047AB]"
+              className="border-2 border-blue-100 dark:border-blue-900 rounded-xl dark:hover:bg-blue-900/20 transition-all duration-300"
             >
               <X className="h-4 w-4 mr-2" />
               Clear Filters
@@ -294,16 +294,16 @@ export const AppointmentsContent = () => {
         </div>
       </div>
 
-      {/* Appointment Cards */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Enhanced Doctor Cards Grid */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
         {filteredDoctors.map((doctor) => (
           <div
             key={doctor.id}
-            className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 ease-in-out"
+            className="group bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 overflow-hidden border border-blue-50 dark:border-blue-900"
           >
-            <div className="p-6">
-              <div className="flex items-center mb-4">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+            <div className="p-6 space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 rounded-full flex items-center justify-center transform group-hover:scale-105 transition-transform duration-300">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-8 w-8 text-"
@@ -314,17 +314,19 @@ export const AppointmentsContent = () => {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-xl text-gray-800">
+                  <h3 className="font-bold text-xl text-gray-800 dark:text-gray-100">
                     {doctor.name}
                   </h3>
-                  <p className="text-blue-600 font-medium">
+                  <p className="text-blue-600 dark:text-blue-400 font-medium">
                     {doctor.specialization}
                   </p>
                 </div>
               </div>
-              <div className="space-y-2 mb-4">
-                <div className="flex items-center text-gray-600">
-                  <MapPin className="h-5 w-5 mr-2 text-blue-500" />
+
+              <div className="space-y-3">
+                {/* Enhanced info items */}
+                <div className="flex items-center text-gray-600 dark:text-gray-300 bg-blue-50 dark:bg-blue-900/20 p-2 rounded-lg">
+                  <MapPin className="h-5 w-5 mr-3 text-blue-500" />
                   <span>{doctor.city}</span>
                 </div>
                 <div className="flex items-center text-gray-600">
@@ -340,7 +342,10 @@ export const AppointmentsContent = () => {
                   <span>10:00 AM - 4:00 PM</span>
                 </div>
               </div>
-              <Button className="w-full" onClick={() => openModal(doctor.id)}>
+              <Button
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-blue-500/25 transition-all duration-300"
+                onClick={() => openModal(doctor.id)}
+              >
                 Book Appointment
               </Button>
             </div>
@@ -348,9 +353,9 @@ export const AppointmentsContent = () => {
         ))}
       </div>
 
-      {/* Appointment Booking Modal */}
+      {/* Enhanced Modal Styling */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px] bg-white/95 dark:bg-gray-800/95 backdrop-blur-lg border border-blue-100 dark:border-blue-900 rounded-2xl shadow-xl">
           <DialogHeader>
             <DialogTitle>Book an Appointment</DialogTitle>
             <DialogDescription>

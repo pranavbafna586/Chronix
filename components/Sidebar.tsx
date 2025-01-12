@@ -18,22 +18,27 @@ export function Sidebar({
   menuItems,
 }: SidebarProps) {
   return (
-    <div className="w-64 bg-gray-50 h-screen fixed left-0 top-20 overflow-y-auto">
-      <nav className="space-y-1 p-4">
+    <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-r border-gray-200 dark:border-gray-700 shadow-lg overflow-y-auto">
+      <nav className="p-3 pt-6 space-y-1"> {/* Added pt-6 for extra top padding */}
         {menuItems.map((item) => (
           <button
             key={item.key}
             onClick={() => setActiveContent(item.key)}
-            className={cn(
-              "w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors",
-              activeContent === item.key && "bg-blue-50 text-blue-600"
-            )}
+            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 ${
+              activeContent === item.key
+              ? 'bg-blue-500 text-white shadow-md shadow-blue-500/25'
+              : 'text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-800'
+            }`}
           >
-            <item.icon className="h-5 w-5" />
-            <span>{item.label}</span>
+            <item.icon className={`w-5 h-5 ${
+              activeContent === item.key
+              ? 'text-white'
+              : 'text-blue-500'
+            }`} />
+            <span className="font-medium">{item.label}</span>
           </button>
         ))}
       </nav>
-    </div>
+    </aside>
   );
 }
