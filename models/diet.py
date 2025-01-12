@@ -1,21 +1,3 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-import google.generativeai as genai
-import json
-import os
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
-
-app = Flask(__name__)
-CORS(app)
-
-# Configure Gemini API
-GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY1')
-
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-1.5-pro")
 
 def create_prompt(form_data):
     return f"""Generate a detailed diet plan based on the following preferences:
@@ -78,34 +60,3 @@ def validate_and_fix_plan(plan):
                 meal['snacks'] = [meal['snacks']] if meal['snacks'] else []
 
     return plan
-
-@app.route('https://dietflask.onrender.com/generate-plan', methods=['POST'])
-def generate_plan():
-    try:
-        form_data = request.json
-        prompt = create_prompt(form_data)
-        
-        # Generate response from Gemini
-        response = model.generate_content(prompt)
-        
-        # Extract JSON from response
-        response_text = response.text
-        # Find the JSON array in the response
-        start_idx = response_text.find('[')
-        end_idx = response_text.rfind(']') + 1
-        if start_idx == -1 or end_idx == 0:
-            raise ValueError("No valid JSON array found in response")
-            
-        json_str = response_text[start_idx:end_idx]
-        plans = json.loads(json_str)
-        
-        # Validate and fix each plan
-        validated_plans = [validate_and_fix_plan(plan) for plan in plans]
-        
-        return jsonify(validated_plans)
-    
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-if __name__ == '__main__':
-    app.run(debug=True)

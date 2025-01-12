@@ -84,7 +84,7 @@ export function DietPlanForm() {
     setError(null);
     try {
       const response = await fetch(
-        "https://dietflask.onrender.com/generate-plan",
+        "http://127.0.0.1:5000/generate-plan",
         {
           method: "POST",
           headers: {

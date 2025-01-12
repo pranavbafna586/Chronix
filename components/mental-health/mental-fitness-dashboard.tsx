@@ -31,11 +31,8 @@ interface MentalFitnessDashboardProps {
 export function MentalFitnessDashboard({
   lastSubmission,
   mentalScore,
-  voiceAnalysis,
 }: MentalFitnessDashboardProps) {
-  const storedVoiceAnalysis =
-    JSON.parse(localStorage.getItem("voiceAnalysisResponse") || "{}")
-      .voice_analysis || {};
+  const storedVoiceAnalysis = JSON.parse(localStorage.getItem("voiceAnalysisResponse") || "{}");
 
   const metrics = [
     {

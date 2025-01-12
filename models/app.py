@@ -4,9 +4,18 @@ import google.generativeai as genai
 import io
 import mimetypes
 import os
+import base64
 import pandas as pd
 import joblib
+import json
 from dotenv import load_dotenv
+
+import warnings
+warnings.filterwarnings("ignore")
+
+from diet import create_prompt, validate_and_fix_plan 
+from prescription import extract_medicine_data
+from mentalHealth import encode_input
 
 load_dotenv()
 
@@ -16,13 +25,17 @@ CORS(app)
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY1')
 
 genai.configure(api_key=GEMINI_API_KEY)
+model = genai.GenerativeModel("gemini-1.5-pro")
 
 # Load models
 diabetes_model = joblib.load('diabetes.pkl')
 heart_model = joblib.load('heart.pkl')
 hypertension_model = joblib.load('hypertension.pkl')
+mental_health_model = joblib.load('mental_health_model.pkl')
 
 
+#######################################################################################################################
+# Diabetes prediction route
 @app.route('/predict/diabetes', methods=['POST'])
 def predict_diabetes():
     data = request.get_json()
@@ -47,6 +60,7 @@ def predict_diabetes():
     print(prediction)
     return jsonify({'prediction': prediction.tolist()})
 
+# Heart disease prediction route
 @app.route('/predict/heart', methods=['POST'])
 def predict_heart():
     data = request.get_json()
@@ -77,6 +91,7 @@ def predict_heart():
     print(prediction)
     return jsonify({'prediction': prediction.tolist()})
 
+# Hypertension prediction route
 @app.route('/predict/hypertension', methods=['POST'])
 def predict_hypertension():
     data = request.get_json()
@@ -104,9 +119,41 @@ def predict_hypertension():
     return jsonify({'prediction': prediction.tolist()})
 
 
+#######################################################################################################################
+# Diet plan generation route
+@app.route('/generate-plan', methods=['POST'])
+def generate_plan():
+    try:
+        form_data = request.json
+        prompt = create_prompt(form_data)
+        
+        # Generate response from Gemini
+        response = model.generate_content(prompt)
+        
+        # Extract JSON from response
+        response_text = response.text
+        print(response_text)
+        # Find the JSON array in the response
+        start_idx = response_text.find('[')
+        end_idx = response_text.rfind(']') + 1
+        if start_idx == -1 or end_idx == 0:
+            raise ValueError("No valid JSON array found in response")
+            
+        json_str = response_text[start_idx:end_idx]
+        plans = json.loads(json_str)
+        
+        # Validate and fix each plan
+        validated_plans = [validate_and_fix_plan(plan) for plan in plans]
+        
+        return jsonify(validated_plans)
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
-@app.route('/upload', methods=['POST'])
+#######################################################################################################################
+# Audio processing route
+@app.route('/prescription/upload', methods=['POST'])
 def process_audio():
     if 'audio' not in request.files:
         return jsonify({"error": "No audio file provided"}), 400
@@ -128,65 +175,63 @@ def process_audio():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-def extract_medicine_data(file_data, mime_type):
-    """
-    Process the audio file using the Gemini model to extract medicine names, timings, and duration.
+#######################################################################################################################
+# Route for mental health prediction
+@app.route('/mental/predict', methods=['POST'])
+def predict():
+    user_input = request.json  # Expecting JSON input
+    X_test = encode_input(user_input)
+    probabilities = mental_health_model.predict_proba(X_test)
+    prob_yes = probabilities[0][1]
+    return jsonify({"mental_fitness_score": int(round(prob_yes * 100))})
 
-    Args:
-        file_data: BytesIO object containing the audio file data.
-        mime_type: String specifying the MIME type of the audio file.
+# Route for voice analysis of mental health
+@app.route('/mental/voice_analysis', methods=['POST'])
+def voice_analysis():
+    if 'audio' not in request.files:
+        return jsonify({"error": "No audio file provided"}), 400
 
-    Returns:
-        dict: Extracted medicine details formatted as JSON.
-    """
+    audio_file = request.files['audio']
+    
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        # Read the audio file data
+        audio_data = audio_file.read()
         
-        myfile = genai.upload_file(file_data, mime_type=mime_type)
-
-        prompt = """
-        Analyze the provided audio file for transcription and extract the following details:
-        - Hospital name is always going to be "Namo Hospital" so don't change it.
-        - Hospital logo
-        - Doctor's name is always going to be "Dr. Pranav Bafna" so don't change it.
-        - Patient's name (if not available, default to "Patient")
-        - Date is always going to be today's date.
-        - Prescription Duration (in days)
-        
-        Additionally, extract the medicines and their details in the following table format:
-        - col-0: Sr. No.
-        - col-1: Medicine Name
-        - col-2: Dosage Time (Options: Morning, Afternoon, Evening, or Pair)
-        - col-3: Instruction (Default to "Take as needed for pain" if no specific instruction is provided)
-
-        Provide the output in the following JSON format:
-        {
-            "hospital_name": "Example Hospital",
-            "hospital_logo": "URL or base64 string",
-            "doctor_name": "Dr. Example",
-            "patient_name": "John Doe",
-            "date": "YYYY-MM-DD",
-            "prescription_duration": "7 days",
-            "medicine_table": [
-                {"Sr.No": 1, "Medicine Name": "Medicine1", "Dosage Time": "Morning", "Instruction": "Take after food"},
-                {"Sr.No": 2, "Medicine Name": "Medicine2", "Dosage Time": "Afternoon", "Instruction": "Take as needed for pain"},
-                {"Sr.No": 3, "Medicine Name": "Medicine3", "Dosage Time": "Evening", "Instruction": "Take after food"}
-            ]
+        # Convert to base64 for Gemini
+        file_data = {
+            "mime_type": "audio/webm",  # Update this based on the actual mime type
+            "data": base64.b64encode(audio_data).decode('utf-8')
         }
 
-        Return the extracted details in english language only. The prescription duration should be extracted from the audio if mentioned, otherwise default to 7 days.
+        # Perform voice analysis using Gemini
+        prompt_template = """
+        Analyze the following audio file and provide a voice analysis in JSON format.
+        
+        Provide the analysis in exactly this JSON format:
+        {
+            "Smoothness": "<percentage out of 100> %",
+            "Control": "<percentage out of 100> %",
+            "Liveliness": "<number between 0-1 with 2 decimal places>",
+            "Energy_range": "<number> dB",
+            "Clarity": "<number> ms",
+            "Crispness": "<number between 0-1 with 2 decimal places>",
+            "Speech": "<Normal/Emotional/Monotone>",
+            "Pause": "<Regular/Fluent/Filled Pauses>"
+        }
         """
 
-        result = model.generate_content([myfile, prompt])
-
-        if result and hasattr(result, 'text'):
-            transcription = result.text.strip()
-            return {"data": transcription}
-
-        return {"error": "No valid transcription found"}
-
+        response = model.generate_content([file_data, prompt_template])
+        json_str = response.text.strip()
+        if '```json' in json_str:
+            json_str = json_str.split('```json')[1].split('```')[0].strip()
+        analysis = json.loads(json_str)
+    except json.JSONDecodeError:
+        analysis = {"error": "Failed to parse JSON response"}
     except Exception as e:
-        raise RuntimeError(f"Error processing audio with Gemini model: {str(e)}")
+        analysis = {"error": f"An error occurred: {str(e)}"}
 
+    return jsonify({"voice_analysis": analysis})
+
+#######################################################################################################################
 if __name__ == '__main__':
     app.run(debug=True)

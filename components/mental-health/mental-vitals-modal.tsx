@@ -15,11 +15,16 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Mic, Square } from "lucide-react";
 import { useForm } from "react-hook-form";
-import axios from "axios"; // Import axios
+import axios from "axios";
 
 interface MentalVitalsModalProps {
   open: boolean;
@@ -33,6 +38,7 @@ export function MentalVitalsModal({
   onSubmit,
 }: MentalVitalsModalProps) {
   const [isRecording, setIsRecording] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const form = useForm({
@@ -51,7 +57,7 @@ export function MentalVitalsModal({
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: "audio/webm", // Specify the desired format
+        mimeType: "audio/webm",
       });
       mediaRecorderRef.current = mediaRecorder;
 
@@ -60,7 +66,6 @@ export function MentalVitalsModal({
       mediaRecorder.onstop = () => {
         const blob = new Blob(chunks, { type: "audio/webm" });
         setAudioBlob(blob);
-        // Stop all tracks in the stream
         stream.getTracks().forEach((track) => track.stop());
       };
 
@@ -79,10 +84,10 @@ export function MentalVitalsModal({
   };
 
   const handleSubmit = async (data: any) => {
+    setIsSubmitting(true);
     try {
-      // Submit form data to /predict endpoint
       const predictResponse = await axios.post(
-        "https://mentalhealthflask.onrender.com/predict",
+        "http://127.0.0.1:5000/mental/predict",
         {
           gender: data.gender,
           Occupation: data.occupation,
@@ -95,15 +100,13 @@ export function MentalVitalsModal({
 
       const score = predictResponse.data.mental_fitness_score;
 
-      // Submit audio file if available
       if (audioBlob) {
         try {
           const formData = new FormData();
-          // Make sure to append with the correct filename and type
           formData.append("audio", audioBlob, "recording.webm");
 
           const voiceResponse = await axios.post(
-            "https://mentalhealthflask.onrender.com/voice_analysis",
+            "http://127.0.0.1:5000/mental/voice_analysis",
             formData,
             {
               headers: {
@@ -112,21 +115,20 @@ export function MentalVitalsModal({
             }
           );
 
-          console.log("Voice Analysis Response:", voiceResponse.data);
           localStorage.setItem(
             "voiceAnalysisResponse",
-            JSON.stringify(voiceResponse.data)
+            JSON.stringify(voiceResponse.data.voice_analysis)
           );
-          // Handle the voice analysis response as needed
         } catch (voiceError) {
           console.error("Error in voice analysis:", voiceError);
         }
       }
 
-      // Call the onSubmit prop with the form data and score
       onSubmit(data, score);
     } catch (error) {
       console.error("Error submitting data:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -141,9 +143,9 @@ export function MentalVitalsModal({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
+            className="space-y-6"
           >
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <FormField
                   control={form.control}
@@ -153,56 +155,20 @@ export function MentalVitalsModal({
                       <FormLabel className="text-sm font-semibold text-purple-700 dark:text-purple-300">
                         Gender
                       </FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex flex-col space-y-1"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="Male" id="gender-male" />
-                            <label htmlFor="gender-male">Male</label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="Female" id="gender-female" />
-                            <label htmlFor="gender-female">Female</label>
-                          </div>
-                        </RadioGroup>
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="moodSwings"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-semibold text-purple-700 dark:text-purple-300">
-                        Mood Swings
-                      </FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex flex-col space-y-1"
-                        >
-                          {["Medium", "Low", "High"].map((value) => (
-                            <div
-                              key={value}
-                              className="flex items-center space-x-2"
-                            >
-                              <RadioGroupItem
-                                value={value}
-                                id={`mood-${value.toLowerCase()}`}
-                              />
-                              <label htmlFor={`mood-${value.toLowerCase()}`}>
-                                {value}
-                              </label>
-                            </div>
-                          ))}
-                        </RadioGroup>
-                      </FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full bg-white/50 dark:bg-slate-800/50 border-2 border-purple-200 dark:border-purple-900">
+                            <SelectValue placeholder="Select gender" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Male">Male</SelectItem>
+                          <SelectItem value="Female">Female</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </FormItem>
                   )}
                 />
@@ -215,12 +181,16 @@ export function MentalVitalsModal({
                       <FormLabel className="text-sm font-semibold text-purple-700 dark:text-purple-300">
                         Occupation
                       </FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex flex-col space-y-1"
-                        >
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full bg-white/50 dark:bg-slate-800/50 border-2 border-purple-200 dark:border-purple-900">
+                            <SelectValue placeholder="Select occupation" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
                           {[
                             "Corporate",
                             "Student",
@@ -228,23 +198,41 @@ export function MentalVitalsModal({
                             "Housewife",
                             "Others",
                           ].map((value) => (
-                            <div
-                              key={value}
-                              className="flex items-center space-x-2"
-                            >
-                              <RadioGroupItem
-                                value={value}
-                                id={`occupation-${value.toLowerCase()}`}
-                              />
-                              <label
-                                htmlFor={`occupation-${value.toLowerCase()}`}
-                              >
-                                {value}
-                              </label>
-                            </div>
+                            <SelectItem key={value} value={value}>
+                              {value}
+                            </SelectItem>
                           ))}
-                        </RadioGroup>
-                      </FormControl>
+                        </SelectContent>
+                      </Select>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="moodSwings"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-semibold text-purple-700 dark:text-purple-300">
+                        Mood Swings
+                      </FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full bg-white/50 dark:bg-slate-800/50 border-2 border-purple-200 dark:border-purple-900">
+                            <SelectValue placeholder="Select mood swings level" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {["Low", "Medium", "High"].map((value) => (
+                            <SelectItem key={value} value={value}>
+                              {value}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </FormItem>
                   )}
                 />
@@ -259,28 +247,23 @@ export function MentalVitalsModal({
                       <FormLabel className="text-sm font-semibold text-purple-700 dark:text-purple-300">
                         Interest in Work
                       </FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex flex-col space-y-1"
-                        >
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full bg-white/50 dark:bg-slate-800/50 border-2 border-purple-200 dark:border-purple-900">
+                            <SelectValue placeholder="Select work interest" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
                           {["No", "Maybe", "Yes"].map((value) => (
-                            <div
-                              key={value}
-                              className="flex items-center space-x-2"
-                            >
-                              <RadioGroupItem
-                                value={value}
-                                id={`work-${value.toLowerCase()}`}
-                              />
-                              <label htmlFor={`work-${value.toLowerCase()}`}>
-                                {value}
-                              </label>
-                            </div>
+                            <SelectItem key={value} value={value}>
+                              {value}
+                            </SelectItem>
                           ))}
-                        </RadioGroup>
-                      </FormControl>
+                        </SelectContent>
+                      </Select>
                     </FormItem>
                   )}
                 />
@@ -293,28 +276,23 @@ export function MentalVitalsModal({
                       <FormLabel className="text-sm font-semibold text-purple-700 dark:text-purple-300">
                         Changes in Habits
                       </FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex flex-col space-y-1"
-                        >
-                          {["No", "Yes", "Maybe"].map((value) => (
-                            <div
-                              key={value}
-                              className="flex items-center space-x-2"
-                            >
-                              <RadioGroupItem
-                                value={value}
-                                id={`habits-${value.toLowerCase()}`}
-                              />
-                              <label htmlFor={`habits-${value.toLowerCase()}`}>
-                                {value}
-                              </label>
-                            </div>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full bg-white/50 dark:bg-slate-800/50 border-2 border-purple-200 dark:border-purple-900">
+                            <SelectValue placeholder="Select habit changes" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {["No", "Maybe", "Yes"].map((value) => (
+                            <SelectItem key={value} value={value}>
+                              {value}
+                            </SelectItem>
                           ))}
-                        </RadioGroup>
-                      </FormControl>
+                        </SelectContent>
+                      </Select>
                     </FormItem>
                   )}
                 />
@@ -327,88 +305,74 @@ export function MentalVitalsModal({
                       <FormLabel className="text-sm font-semibold text-purple-700 dark:text-purple-300">
                         Social Weakness
                       </FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex flex-col space-y-1"
-                        >
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full bg-white/50 dark:bg-slate-800/50 border-2 border-purple-200 dark:border-purple-900">
+                            <SelectValue placeholder="Select social weakness" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
                           {["Yes", "No", "Maybe"].map((value) => (
-                            <div
-                              key={value}
-                              className="flex items-center space-x-2"
-                            >
-                              <RadioGroupItem
-                                value={value}
-                                id={`social-${value.toLowerCase()}`}
-                              />
-                              <label htmlFor={`social-${value.toLowerCase()}`}>
-                                {value}
-                              </label>
-                            </div>
+                            <SelectItem key={value} value={value}>
+                              {value}
+                            </SelectItem>
                           ))}
-                        </RadioGroup>
-                      </FormControl>
+                        </SelectContent>
+                      </Select>
                     </FormItem>
                   )}
                 />
               </div>
             </div>
 
-            <FormField
-              control={form.control}
-              name="reflection"
-              render={({ field }) => (
-                <FormItem className="bg-white/50 dark:bg-slate-800/50 p-4 rounded-lg border-2 border-purple-200 dark:border-purple-900">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <FormLabel className="text-sm font-semibold text-purple-700 dark:text-purple-300">
-                        Tell me about your day
-                      </FormLabel>
-                      <div className="flex items-center gap-3">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={isRecording ? stopRecording : startRecording}
-                          className={`rounded-full hover:scale-105 transition-all ${
-                            isRecording
-                              ? "bg-red-100 hover:bg-red-200 text-red-600"
-                              : "bg-purple-100 hover:bg-purple-200 text-purple-600"
-                          }`}
-                        >
-                          {isRecording ? (
-                            <Square className="h-4 w-4" />
-                          ) : (
-                            <Mic className="h-4 w-4" />
-                          )}
-                        </Button>
-                        {audioBlob && (
-                          <div className="bg-purple-50 dark:bg-purple-900/30 p-1 rounded-lg">
-                            <audio controls className="h-7 w-[200px]">
-                              <source
-                                src={URL.createObjectURL(audioBlob)}
-                                type="audio/webm"
-                              />
-                            </audio>
-                          </div>
-                        )}
+            <div className="bg-white/50 dark:bg-slate-800/50 p-4 rounded-lg border-2 border-purple-200 dark:border-purple-900">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <FormLabel className="text-sm font-semibold text-purple-700 dark:text-purple-300">
+                    Tell me about your day
+                  </FormLabel>
+                  <div className="flex items-center gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={isRecording ? stopRecording : startRecording}
+                      className={`rounded-full hover:scale-105 transition-all ${
+                        isRecording
+                          ? "bg-red-100 hover:bg-red-200 text-red-600"
+                          : "bg-purple-100 hover:bg-purple-200 text-purple-600"
+                      }`}
+                    >
+                      {isRecording ? (
+                        <Square className="h-4 w-4" />
+                      ) : (
+                        <Mic className="h-4 w-4" />
+                      )}
+                    </Button>
+                    {audioBlob && (
+                      <div className="bg-purple-50 dark:bg-purple-900/30 p-1 rounded-lg">
+                        <audio controls className="h-7 w-[200px]">
+                          <source
+                            src={URL.createObjectURL(audioBlob)}
+                            type="audio/webm"
+                          />
+                        </audio>
                       </div>
-                    </div>
-                    <Textarea
-                      placeholder="Write your reflection here..."
-                      {...field}
-                    />
+                    )}
                   </div>
-                </FormItem>
-              )}
-            />
+                </div>
+              </div>
+            </div>
 
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white py-4 rounded-lg text-base font-semibold shadow-md hover:shadow-lg transition-all duration-200"
+              disabled={isSubmitting}
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white py-4 rounded-lg text-base font-semibold shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              Submit Assessment
+              {isSubmitting ? "Generating..." : "Submit Assessment"}
             </Button>
           </form>
         </Form>

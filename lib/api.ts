@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://prescriptionflask.onrender.com'; // adjust this to your Flask server URL
+const API_BASE_URL = 'http://127.0.0.1:5000'; // adjust this to your Flask server URL
 
 export async function predictDisease(diseaseId: string, data: Record<string, any>) {
   const response = await fetch(`${API_BASE_URL}/predict/${diseaseId}`, {

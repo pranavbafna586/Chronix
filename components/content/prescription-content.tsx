@@ -118,7 +118,7 @@ export function prescriptionContent() {
 
     try {
       const response = await fetch(
-        "https://prescriptionflask.onrender.com/upload",
+        "http://127.0.0.1:5000/prescription/upload",
         {
           method: "POST",
           body: formData,
