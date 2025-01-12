@@ -15,8 +15,13 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Mic, Square } from "lucide-react";
 import { useForm } from "react-hook-form";
 import axios from "axios"; // Import axios
@@ -132,41 +137,41 @@ export function MentalVitalsModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Mental Health Assessment</DialogTitle>
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 border-2">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-600">
+            Mental Health Assessment
+          </DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-6"
+            className="space-y-4"
           >
             <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <FormField
                   control={form.control}
                   name="gender"
                   render={({ field }) => (
-                    <FormItem className="space-y-3 border border-gray-500 p-3 rounded-md">
-                      <FormLabel className="text-base font-semibold">
+                    <FormItem>
+                      <FormLabel className="text-sm font-semibold text-purple-700 dark:text-purple-300">
                         Gender
                       </FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex flex-col space-y-1"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="Male" id="gender-male" />
-                            <label htmlFor="gender-male">Male</label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="Female" id="gender-female" />
-                            <label htmlFor="gender-female">Female</label>
-                          </div>
-                        </RadioGroup>
-                      </FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full bg-white/50 dark:bg-slate-800/50 border-2 border-purple-200 dark:border-purple-900">
+                            <SelectValue placeholder="Select gender" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Male">Male</SelectItem>
+                          <SelectItem value="Female">Female</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </FormItem>
                   )}
                 />
@@ -175,32 +180,27 @@ export function MentalVitalsModal({
                   control={form.control}
                   name="moodSwings"
                   render={({ field }) => (
-                    <FormItem className="space-y-3 border border-gray-500 p-3 rounded-md">
-                      <FormLabel className="text-base font-semibold">
+                    <FormItem>
+                      <FormLabel className="text-sm font-semibold text-purple-700 dark:text-purple-300">
                         Mood Swings
                       </FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex flex-col space-y-1"
-                        >
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full bg-white/50 dark:bg-slate-800/50 border-2 border-purple-200 dark:border-purple-900">
+                            <SelectValue placeholder="Select level" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
                           {["Medium", "Low", "High"].map((value) => (
-                            <div
-                              key={value}
-                              className="flex items-center space-x-2"
-                            >
-                              <RadioGroupItem
-                                value={value}
-                                id={`mood-${value.toLowerCase()}`}
-                              />
-                              <label htmlFor={`mood-${value.toLowerCase()}`}>
-                                {value}
-                              </label>
-                            </div>
+                            <SelectItem key={value} value={value}>
+                              {value}
+                            </SelectItem>
                           ))}
-                        </RadioGroup>
-                      </FormControl>
+                        </SelectContent>
+                      </Select>
                     </FormItem>
                   )}
                 />
@@ -209,16 +209,20 @@ export function MentalVitalsModal({
                   control={form.control}
                   name="occupation"
                   render={({ field }) => (
-                    <FormItem className="space-y-3 border border-gray-500 p-3 rounded-md">
-                      <FormLabel className="text-base font-semibold">
+                    <FormItem>
+                      <FormLabel className="text-sm font-semibold text-purple-700 dark:text-purple-300">
                         Occupation
                       </FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex flex-col space-y-1"
-                        >
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full bg-white/50 dark:bg-slate-800/50 border-2 border-purple-200 dark:border-purple-900">
+                            <SelectValue placeholder="Select occupation" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
                           {[
                             "Corporate",
                             "Student",
@@ -226,59 +230,43 @@ export function MentalVitalsModal({
                             "Housewife",
                             "Others",
                           ].map((value) => (
-                            <div
-                              key={value}
-                              className="flex items-center space-x-2"
-                            >
-                              <RadioGroupItem
-                                value={value}
-                                id={`occupation-${value.toLowerCase()}`}
-                              />
-                              <label
-                                htmlFor={`occupation-${value.toLowerCase()}`}
-                              >
-                                {value}
-                              </label>
-                            </div>
+                            <SelectItem key={value} value={value}>
+                              {value}
+                            </SelectItem>
                           ))}
-                        </RadioGroup>
-                      </FormControl>
+                        </SelectContent>
+                      </Select>
                     </FormItem>
                   )}
                 />
               </div>
 
-              <div className="space-y-6 ">
+              <div className="space-y-4">
                 <FormField
                   control={form.control}
                   name="workInterest"
                   render={({ field }) => (
-                    <FormItem className="space-y-3 border border-gray-500 p-3 rounded-md">
-                      <FormLabel className="text-base font-semibold">
+                    <FormItem>
+                      <FormLabel className="text-sm font-semibold text-purple-700 dark:text-purple-300">
                         Interest in Work
                       </FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex flex-col space-y-1"
-                        >
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full bg-white/50 dark:bg-slate-800/50 border-2 border-purple-200 dark:border-purple-900">
+                            <SelectValue placeholder="Select option" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
                           {["No", "Maybe", "Yes"].map((value) => (
-                            <div
-                              key={value}
-                              className="flex items-center space-x-2"
-                            >
-                              <RadioGroupItem
-                                value={value}
-                                id={`work-${value.toLowerCase()}`}
-                              />
-                              <label htmlFor={`work-${value.toLowerCase()}`}>
-                                {value}
-                              </label>
-                            </div>
+                            <SelectItem key={value} value={value}>
+                              {value}
+                            </SelectItem>
                           ))}
-                        </RadioGroup>
-                      </FormControl>
+                        </SelectContent>
+                      </Select>
                     </FormItem>
                   )}
                 />
@@ -287,32 +275,27 @@ export function MentalVitalsModal({
                   control={form.control}
                   name="changesHabits"
                   render={({ field }) => (
-                    <FormItem className="space-y-3 border border-gray-500 p-3 rounded-md">
-                      <FormLabel className="text-base font-semibold">
+                    <FormItem>
+                      <FormLabel className="text-sm font-semibold text-purple-700 dark:text-purple-300">
                         Changes in Habits
                       </FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex flex-col space-y-1"
-                        >
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full bg-white/50 dark:bg-slate-800/50 border-2 border-purple-200 dark:border-purple-900">
+                            <SelectValue placeholder="Select option" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
                           {["No", "Yes", "Maybe"].map((value) => (
-                            <div
-                              key={value}
-                              className="flex items-center space-x-2"
-                            >
-                              <RadioGroupItem
-                                value={value}
-                                id={`habits-${value.toLowerCase()}`}
-                              />
-                              <label htmlFor={`habits-${value.toLowerCase()}`}>
-                                {value}
-                              </label>
-                            </div>
+                            <SelectItem key={value} value={value}>
+                              {value}
+                            </SelectItem>
                           ))}
-                        </RadioGroup>
-                      </FormControl>
+                        </SelectContent>
+                      </Select>
                     </FormItem>
                   )}
                 />
@@ -321,32 +304,27 @@ export function MentalVitalsModal({
                   control={form.control}
                   name="socialWeakness"
                   render={({ field }) => (
-                    <FormItem className="space-y-3 border border-gray-500 p-3 rounded-md">
-                      <FormLabel className="text-base font-semibold">
+                    <FormItem>
+                      <FormLabel className="text-sm font-semibold text-purple-700 dark:text-purple-300">
                         Social Weakness
                       </FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex flex-col space-y-1"
-                        >
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full bg-white/50 dark:bg-slate-800/50 border-2 border-purple-200 dark:border-purple-900">
+                            <SelectValue placeholder="Select option" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
                           {["Yes", "No", "Maybe"].map((value) => (
-                            <div
-                              key={value}
-                              className="flex items-center space-x-2"
-                            >
-                              <RadioGroupItem
-                                value={value}
-                                id={`social-${value.toLowerCase()}`}
-                              />
-                              <label htmlFor={`social-${value.toLowerCase()}`}>
-                                {value}
-                              </label>
-                            </div>
+                            <SelectItem key={value} value={value}>
+                              {value}
+                            </SelectItem>
                           ))}
-                        </RadioGroup>
-                      </FormControl>
+                        </SelectContent>
+                      </Select>
                     </FormItem>
                   )}
                 />
@@ -357,40 +335,52 @@ export function MentalVitalsModal({
               control={form.control}
               name="reflection"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="bg-white/50 dark:bg-slate-800/50 p-4 rounded-lg border-2 border-purple-200 dark:border-purple-900">
                   <div className="space-y-2">
-                    <div className="flex items-center gap-7">
-                      <FormLabel className="text-base font-semibold">
+                    <div className="flex items-center justify-between">
+                      <FormLabel className="text-sm font-semibold text-purple-700 dark:text-purple-300">
                         Tell me about your day
                       </FormLabel>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={isRecording ? stopRecording : startRecording}
-                      >
-                        {isRecording ? (
-                          <Square className="h-4 w-4" />
-                        ) : (
-                          <Mic className="h-4 w-4" />
+                      <div className="flex items-center gap-3">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={isRecording ? stopRecording : startRecording}
+                          className={`rounded-full hover:scale-105 transition-all ${
+                            isRecording
+                              ? "bg-red-100 hover:bg-red-200 text-red-600"
+                              : "bg-purple-100 hover:bg-purple-200 text-purple-600"
+                          }`}
+                        >
+                          {isRecording ? (
+                            <Square className="h-4 w-4" />
+                          ) : (
+                            <Mic className="h-4 w-4" />
+                          )}
+                        </Button>
+                        {audioBlob && (
+                          <div className="bg-purple-50 dark:bg-purple-900/30 p-1 rounded-lg">
+                            <audio controls className="h-7 w-[200px]">
+                              <source
+                                src={URL.createObjectURL(audioBlob)}
+                                type="audio/webm"
+                              />
+                            </audio>
+                          </div>
                         )}
-                      </Button>
-                      {audioBlob && (
-                        <audio controls>
-                          <source
-                            src={URL.createObjectURL(audioBlob)}
-                            type="audio/webm"
-                          />
-                        </audio>
-                      )}
+                      </div>
                     </div>
                   </div>
                 </FormItem>
               )}
             />
 
-            <Button type="submit" className="w-full">
-              Submit
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white py-4 rounded-lg text-base font-semibold shadow-md hover:shadow-lg transition-all duration-200"
+            >
+              Submit Assessment
             </Button>
           </form>
         </Form>
