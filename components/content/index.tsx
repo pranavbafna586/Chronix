@@ -1,13 +1,12 @@
-import Home from "@/app/(main)/(routes)/home/page";
 import { AppointmentsContent } from "./appointments-content";
 import DashboardContent from "./dashboard-content";
 import { DoctorsContent } from "./doctors-content";
 import { HomeContent } from "./home-content";
 import ReportsContent from "./reports-content";
 import EducationContent from "./education-content";
-import { labContent } from "./lab-content";
+import { LabContent } from "./lab-content";
 import DietPlanPage from "./diet-content";
-import { prescriptionContent } from "./prescription-content";
+import { PrescriptionContent } from "./prescription-content";
 import MentalHealthPage from "./mentalhealth-content";
 import RiskAssessment from "./risk-content";
 import { DrAppointmentsContent } from "./dr-appointments-content";
@@ -22,11 +21,11 @@ export const contentComponents = {
   appointments: AppointmentsContent,
   doctors: DoctorsContent,
   reports: ReportsContent,
-  lab: labContent,
+  lab: LabContent,
   risk: RiskAssessment,
   diet: DietPlanPage,
   mentalhealth: MentalHealthPage,
-  prescription: prescriptionContent,
+  prescription: PrescriptionContent,
   education: EducationContent,
   community: communityContent,
   aichat: AiChatContent,

@@ -27,7 +27,7 @@ export function GroupDetailsDialog({
   const isAdmin = group.admins.includes(currentUser.id);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} onClose={() => onOpenChange(false)}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{group.name} - Group Details</DialogTitle>

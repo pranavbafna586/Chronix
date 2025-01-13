@@ -5,7 +5,7 @@ import { DiseaseCard } from "@/components/lab-tests/disease-card";
 import { TestModal } from "@/components/lab-tests/test-modal";
 import { Disease, diseases } from "@/lib/diseases";
 
-export function labContent() {
+export function LabContent() {
   const [selectedDisease, setSelectedDisease] = useState<Disease | null>(null);
   const [testResults, setTestResults] = useState<Record<string, number>>({});
 

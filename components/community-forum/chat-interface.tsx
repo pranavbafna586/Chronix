@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 
-function findContactById(chatId: string): Contact | null {
+function findContactById(_chatId: string): Contact | null {
   // Implement the logic to find and return the contact by chatId
   // This is a placeholder implementation
   return null;
@@ -34,7 +34,7 @@ export function ChatInterface() {
             currentUser={{ id: "1", name: "Default User" }}
             chats={[]}
             selectedChatId={null}
-            onCreateGroup={function (group: Group): void {
+            onCreateGroup={function (_group: Group): void {
               throw new Error("Function not implemented.");
             }}
             onOpenUserProfile={function (): void {

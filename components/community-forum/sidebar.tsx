@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, MoreVertical, Plus } from "lucide-react";
+import { Search, MoreVertical } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -32,7 +32,6 @@ export function Sidebar({
   onSelectChat,
   selectedChatId,
   onCreateGroup,
-  onOpenUserProfile,
 }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreateGroupDialog, setShowCreateGroupDialog] = useState(false);

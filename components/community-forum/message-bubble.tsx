@@ -2,15 +2,7 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
-import {
-  Edit2,
-  Forward,
-  MoreVertical,
-  Trash,
-  FileText,
-  ImageIcon,
-  Mic,
-} from "lucide-react";
+import { Edit2, Forward, MoreVertical, Trash, FileText } from "lucide-react";
 import { Message } from "@/types/chat";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

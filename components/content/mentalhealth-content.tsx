@@ -9,10 +9,14 @@ export default function MentalHealthPage() {
   const [showModal, setShowModal] = useState(false);
   const [lastSubmission, setLastSubmission] = useState<Date | null>(null);
   const [mentalScore, setMentalScore] = useState<number | null>(null);
+  const [voiceAnalysis, setVoiceAnalysis] = useState<any>(null);
 
-  const handleSubmit = (data: any, score: number) => {
+  const handleSubmit = (data: any, score: number, voiceAnalysis?: any) => {
     setLastSubmission(new Date());
     setMentalScore(score);
+    if (voiceAnalysis) {
+      setVoiceAnalysis(voiceAnalysis);
+    }
     setShowModal(false);
   };
 
@@ -25,6 +29,7 @@ export default function MentalHealthPage() {
       <MentalFitnessDashboard
         lastSubmission={lastSubmission}
         mentalScore={mentalScore}
+        voiceAnalysis={voiceAnalysis}
       />
       <MentalVitalsModal
         open={showModal}

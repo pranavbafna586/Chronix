@@ -18,43 +18,6 @@ interface QuestionData {
   options?: string[]; // Only required if type is "select"
 }
 
-const questions: QuestionData[] = [
-  { id: "age", text: "What is your age?", type: "number" },
-  {
-    id: "gender",
-    text: "What is your gender?",
-    type: "select",
-    options: ["Male", "Female", "Other"],
-  },
-  { id: "weight", text: "What is your weight in kg?", type: "number" },
-  { id: "height", text: "What is your height in cm?", type: "number" },
-  { id: "smoking", text: "Do you smoke?", type: "boolean" },
-  { id: "alcohol", text: "Do you consume alcohol regularly?", type: "boolean" },
-  {
-    id: "exercise",
-    text: "How often do you exercise per week?",
-    type: "select",
-    options: ["Never", "1-2 times", "3-4 times", "5+ times"],
-  },
-  {
-    id: "diet",
-    text: "How would you describe your diet?",
-    type: "select",
-    options: ["Poor", "Average", "Good", "Excellent"],
-  },
-  {
-    id: "familyHistory",
-    text: "Do you have a family history of any chronic diseases?",
-    type: "boolean",
-  },
-  {
-    id: "stress",
-    text: "How would you rate your stress level?",
-    type: "select",
-    options: ["Low", "Medium", "High"],
-  },
-];
-
 interface QuestionProps {
   question: QuestionData;
   onAnswer: (answer: any) => void;

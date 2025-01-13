@@ -67,7 +67,7 @@ export function AudioRecorder({ onStop, onCancel }: AudioRecorderProps) {
           .forEach((track) => track.stop());
       }
     };
-  }, [onStop]);
+  }, [onStop, isRecording]);
 
   const handleStopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {

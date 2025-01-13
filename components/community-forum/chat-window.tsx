@@ -17,7 +17,6 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Contact, Message } from "@/types/chat";
 import { VoiceRecorder } from "./voice-recorder";
-import { string } from "zod";
 
 interface ChatWindowProps {
   contact: Contact | null;
@@ -128,7 +127,7 @@ export function ChatWindow({ contact, onBack }: ChatWindowProps) {
       <div className="p-4 border-t">
         {isRecording ? (
           <VoiceRecorder
-            onStop={(blob) => {
+            onStop={() => {
               // Handle voice message
               setIsRecording(false);
             }}

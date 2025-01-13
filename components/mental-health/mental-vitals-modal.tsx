@@ -29,7 +29,7 @@ import axios from "axios";
 interface MentalVitalsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: any, score: number) => void;
+  onSubmit: (data: any, score: number, voiceAnalysis?: any) => void;
 }
 
 export function MentalVitalsModal({
@@ -99,6 +99,7 @@ export function MentalVitalsModal({
       );
 
       const score = predictResponse.data.mental_fitness_score;
+      let voiceAnalysis = null;
 
       if (audioBlob) {
         try {
@@ -115,16 +116,13 @@ export function MentalVitalsModal({
             }
           );
 
-          localStorage.setItem(
-            "voiceAnalysisResponse",
-            JSON.stringify(voiceResponse.data.voice_analysis)
-          );
+          voiceAnalysis = voiceResponse.data.voice_analysis;
         } catch (voiceError) {
           console.error("Error in voice analysis:", voiceError);
         }
       }
 
-      onSubmit(data, score);
+      onSubmit(data, score, voiceAnalysis);
     } catch (error) {
       console.error("Error submitting data:", error);
     } finally {

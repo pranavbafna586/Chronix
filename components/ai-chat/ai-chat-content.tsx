@@ -10,8 +10,6 @@ declare global {
 import { Mic, Phone, Bot, User } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -233,12 +231,15 @@ If not health-related, say: "I can only help with health-related questions. Plea
     try {
       // Use the CHAT_API_KEY directly from env
       console.log("API Key available:", !!process.env.NEXT_PUBLIC_CHAT_API_KEY);
-      
+
       // Change this line to use the correct environment variable
-      const API_KEY = process.env.NEXT_PUBLIC_CHAT_API_KEY || process.env.CHAT_API_KEY;
-      
+      const API_KEY =
+        process.env.NEXT_PUBLIC_CHAT_API_KEY || process.env.CHAT_API_KEY;
+
       if (!API_KEY) {
-        throw new Error("API key is not configured. Please check your .env file");
+        throw new Error(
+          "API key is not configured. Please check your .env file"
+        );
       }
 
       const [responseData, emotionData] = await Promise.all([

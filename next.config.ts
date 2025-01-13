@@ -1,16 +1,24 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: true,
   images: {
-    domains: ['plus.unsplash.com','images.unsplash.com', 'assets.example.com','i.pravatar.cc'], // Add your domains here
-    // Remote patterns for specific configurations
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'assets.example.com',
+        hostname: '**',
         port: '',
-        pathname: '/account123/**', // Replace with your specific path pattern
-      },
+        pathname: '**',
+      }
     ],
+  },
+  webpack: (config: any, { isServer }: { isServer: boolean }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        punycode: false,
+      };
+    }
+    return config;
   },
 };
 

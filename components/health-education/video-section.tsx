@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import Image from "next/image";
 import {
   Card,
   CardContent,
@@ -99,10 +100,12 @@ export function VideoSection({ searchQuery }: VideoSectionProps) {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <img
+                    <Image
                       src={video.snippet.thumbnails.medium.url}
                       alt={video.snippet.title}
                       className="w-full h-32 object-cover mb-2 rounded-md"
+                      width={320}
+                      height={180}
                     />
                     <CardDescription className="line-clamp-2">
                       {video.snippet.description}

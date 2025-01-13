@@ -169,7 +169,7 @@ export default function PatientDashboard() {
 
   // Filtered and sorted data
   const filteredAndSortedData = useMemo(() => {
-    let filtered = patients.filter(
+    const filtered = patients.filter(
       (patient) =>
         (priorityFilter === "all" || patient.priority === priorityFilter) &&
         Object.values(patient).some((value) =>
@@ -206,7 +206,7 @@ export default function PatientDashboard() {
             Patient Management Dashboard
           </CardTitle>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Monitor and manage your patients' conditions and treatments
+            Monitor and manage your patients conditions and treatments
           </p>
         </div>
         <Avatar className="h-12 w-12 ring-2 ring-gray-500 dark:ring-gray-400 shadow-md">

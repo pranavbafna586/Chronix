@@ -31,55 +31,54 @@ interface MentalFitnessDashboardProps {
 export function MentalFitnessDashboard({
   lastSubmission,
   mentalScore,
+  voiceAnalysis,
 }: MentalFitnessDashboardProps) {
-  const storedVoiceAnalysis = JSON.parse(localStorage.getItem("voiceAnalysisResponse") || "{}");
-
   const metrics = [
     {
       title: "Smoothness",
-      value: storedVoiceAnalysis.Smoothness || "N/A",
+      value: voiceAnalysis?.Smoothness || "N/A",
       icon: Activity,
       color: "bg-blue-100 text-blue-800",
     },
     {
       title: "Control",
-      value: storedVoiceAnalysis.Control || "N/A",
+      value: voiceAnalysis?.Control || "N/A",
       icon: Brain,
       color: "bg-green-100 text-green-800",
     },
     {
       title: "Liveliness",
-      value: storedVoiceAnalysis.Liveliness || "N/A",
+      value: voiceAnalysis?.Liveliness || "N/A",
       icon: Heart,
       color: "bg-red-100 text-red-800",
     },
     {
       title: "Energy Range",
-      value: storedVoiceAnalysis.Energy_range || "N/A",
+      value: voiceAnalysis?.Energy_range || "N/A",
       icon: BarChart,
       color: "bg-yellow-100 text-yellow-800",
     },
     {
       title: "Clarity",
-      value: storedVoiceAnalysis.Clarity || "N/A",
+      value: voiceAnalysis?.Clarity || "N/A",
       icon: Music,
       color: "bg-purple-100 text-purple-800",
     },
     {
       title: "Crispness",
-      value: storedVoiceAnalysis.Crispness || "N/A",
+      value: voiceAnalysis?.Crispness || "N/A",
       icon: Volume2,
       color: "bg-indigo-100 text-indigo-800",
     },
     {
       title: "Speech",
-      value: storedVoiceAnalysis.Speech || "N/A",
+      value: voiceAnalysis?.Speech || "N/A",
       icon: Clock,
       color: "bg-teal-100 text-teal-800",
     },
     {
       title: "Pause",
-      value: storedVoiceAnalysis.Pause || "N/A",
+      value: voiceAnalysis?.Pause || "N/A",
       icon: Pause,
       color: "bg-pink-100 text-pink-800",
     },

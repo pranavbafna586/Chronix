@@ -1,21 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { format } from "date-fns";
-import {
-  Smile,
-  Paperclip,
-  Mic,
-  Send,
-  Phone,
-  Video,
-  Search,
-  MoreVertical,
-  Users,
-  ArrowLeft,
-  Image,
-  FileText,
-} from "lucide-react";
+import { Mic, Send } from "lucide-react";
 import type { Message, User, Chat, Group } from "@/types/chat";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,16 +9,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MessageBubble } from "./message-bubble";
 import { ForwardMessageDialog } from "./forward-message-dialog";
 import { Sidebar } from "./sidebar";
-import { GroupDetailsDialog } from "./group-details-dialog";
-import { UserProfileSidebar } from "./user-profile-sidebar";
 import { DeleteMessageDialog } from "./delete-message-dialog";
 import { AudioRecorder } from "./audio-recorder";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 export function Chat() {
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
@@ -41,12 +19,10 @@ export function Chat() {
   const [editingMessage, setEditingMessage] = useState<string | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [showForwardDialog, setShowForwardDialog] = useState(false);
-  const [showGroupDetailsDialog, setShowGroupDetailsDialog] = useState(false);
-  const [showUserProfileSidebar, setShowUserProfileSidebar] = useState(false);
+  const [, _setShowGroupDetailsDialog] = useState(false);
+  const [, _setShowUserProfileSidebar] = useState(false);
   const [showDeleteMessageDialog, setShowDeleteMessageDialog] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
@@ -248,67 +224,6 @@ export function Chat() {
     setShowDeleteMessageDialog(false);
   };
 
-  const handleUpdateUserProfile = (updatedUser: User) => {
-    console.log("Updating user profile:", updatedUser);
-    setShowUserProfileSidebar(false);
-  };
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && selectedChat) {
-      const fileType = file.type.startsWith("image/") ? "image" : "pdf";
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const fileUrl = e.target?.result as string;
-        const newMessage: Message = {
-          id: Date.now().toString(),
-          content: file.name,
-          senderId: currentUser.id,
-          timestamp: new Date(),
-          type: fileType,
-          fileUrl: fileUrl,
-          sender: "",
-        };
-        setMessages([...messages, newMessage]);
-        setChats(
-          chats.map((chat) =>
-            chat.id === selectedChat.id
-              ? { ...chat, lastMessage: newMessage, unreadCount: 0 }
-              : chat
-          )
-        );
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleAudioRecordingComplete = (audioBlob: Blob) => {
-    if (selectedChat) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const audioUrl = e.target?.result as string;
-        const newMessage: Message = {
-          id: Date.now().toString(),
-          content: "Audio message",
-          senderId: currentUser.id,
-          timestamp: new Date(),
-          type: "audio",
-          fileUrl: audioUrl,
-          sender: "",
-        };
-        setMessages([...messages, newMessage]);
-        setChats(
-          chats.map((chat) =>
-            chat.id === selectedChat.id
-              ? { ...chat, lastMessage: newMessage, unreadCount: 0 }
-              : chat
-          )
-        );
-      };
-      reader.readAsDataURL(audioBlob);
-    }
-  };
-
   const handleAudioStop = (audioBlob: Blob) => {
     console.log("Audio recorded:", audioBlob);
     setIsRecording(false);
@@ -327,7 +242,7 @@ export function Chat() {
           onSelectChat={handleSelectChat}
           selectedChatId={selectedChat?.id || null}
           onCreateGroup={handleCreateGroup}
-          onOpenUserProfile={() => setShowUserProfileSidebar(true)}
+          onOpenUserProfile={() => _setShowUserProfileSidebar(true)}
         />
       </div>
 

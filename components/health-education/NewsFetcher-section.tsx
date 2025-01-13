@@ -40,13 +40,15 @@ const NewsArticle: React.FC<{ article: Article }> = ({ article }) => {
           style={{ paddingBottom: `${(1 / aspectRatio) * 100}%` }}
         >
           {!imageError ? (
-            <img
+            <Image
               src={article.thumbnail}
               alt={article.title}
               onError={() => setImageError(true)}
               onLoad={handleImageLoad}
               className="absolute inset-0 w-full h-full object-contain"
               loading="lazy"
+              width={16}
+              height={9}
             />
           ) : (
             <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">

@@ -1,5 +1,4 @@
 "use client";
-import { cn } from "@/lib/utils";
 import { ContentKey } from "./content";
 
 interface SidebarProps {

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Square, Send } from "lucide-react";
+import { Square } from "lucide-react";
 
 interface VoiceRecorderProps {
   onStop: (blob: Blob) => void;
@@ -55,7 +55,7 @@ export function VoiceRecorder({ onStop }: VoiceRecorderProps) {
           .forEach((track) => track.stop());
       }
     };
-  }, [onStop]);
+  }, [onStop, isRecording]);
 
   const handleStop = () => {
     if (mediaRecorderRef.current && isRecording) {

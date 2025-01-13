@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export function HomeContent() {
   return (
     <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto ">
@@ -19,10 +21,12 @@ export function HomeContent() {
       </div>
       <div className="relative aspect-square">
         <div className="m-5 w-full h-full bg-blue-100 rounded-2xl flex items-center justify-center overflow-hidden">
-          <img
+          <Image
             src="/image.png"
             alt="Chronix"
             className="w-full h-full object-cover rounded-2xl"
+            width={500}
+            height={500}
           />
         </div>
       </div>

@@ -10,17 +10,14 @@ import {
   FileText,
   Brain,
   AlertTriangle,
-  Target,
   Salad,
   Cloud,
   GraduationCap,
   Users,
   HomeIcon,
   TestTube,
-  PillBottleIcon,
   PhoneCall,
 } from "lucide-react";
-import { DropdownMenuRadioGroup } from "@radix-ui/react-dropdown-menu";
 
 export default function Home() {
   const [activeContent, setActiveContent] = useState<ContentKey | null>(null);

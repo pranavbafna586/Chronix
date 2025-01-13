@@ -14,7 +14,7 @@ interface PillSchedule {
   isTaken: boolean;
 }
 
-export default function calanderContent() {
+export default function CalanderContent() {
   const [score, setScore] = useState(0);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const { toast } = useToast();

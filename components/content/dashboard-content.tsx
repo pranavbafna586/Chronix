@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { TrendingUp, Users, Activity, Heart } from "lucide-react";
+import { Users, Activity, Heart } from "lucide-react";
 import {
   Area,
   AreaChart,
@@ -16,12 +16,10 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import {
-  ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,

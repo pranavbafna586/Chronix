@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react"; // Add useEffect import
 import {
   Plus,
-  X,
   Search,
   Calendar,
   Tag,

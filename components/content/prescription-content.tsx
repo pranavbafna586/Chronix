@@ -32,14 +32,14 @@ interface PrescriptionData {
   medicine_table: MedicineRow[];
 }
 
-export function prescriptionContent() {
+export function PrescriptionContent() {
   const [recording, setRecording] = useState<boolean>(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [responseJson, setResponseJson] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [audioURL, setAudioURL] = useState<string | null>(null);
   const [editingRow, setEditingRow] = useState<number | null>(null);
-  const [editedValues, setEditedValues] = useState<MedicineRow | {}>({});
+  const [editedValues, setEditedValues] = useState<Partial<MedicineRow>>({});
   const [canUpload, setCanUpload] = useState<boolean>(true);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -90,7 +90,8 @@ export function prescriptionContent() {
       mediaRecorderRef.current = mediaRecorder;
       setRecording(true);
       setCanUpload(false);
-    } catch (err) {
+    } catch (error) {
+      console.error("Error accessing microphone:", error);
       setError(
         "Could not start recording. Please check your microphone permissions."
       );
@@ -118,7 +119,7 @@ export function prescriptionContent() {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:5000/prescription/upload",
+        "https://prescriptionflask.onrender.com/upload",
         {
           method: "POST",
           body: formData,

@@ -7,10 +7,9 @@ import Guide from "@/components/home/Guide";
 import Pricing from "@/components/home/Pricing";
 import Footer from "@/components/home/Footer";
 import Header from "@/components/home/Header";
-import SignUp from "@/app/(main)/(auth)/sign-up/page";
 
 export default function Landing() {
-  const [isSignedUp, setIsSignedUp] = useState(false);
+  const [isSignedUp] = useState(false);
   const router = useRouter();
 
   const handleSectionClick = (section: string) => {

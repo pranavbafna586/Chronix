@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-
+import Image from "next/image";
 const Hero = () => {
   return (
     <section className="min-h-screen w-full md:p-16 bg-gradient-to-r from-primary to-primary-foreground">
@@ -25,10 +25,12 @@ const Hero = () => {
         </div>
         {/* Right Content */}
         <div className="md:w-1/2">
-          <img
-            src="image.png"
+          <Image
+            src="/image.png"
             alt="Healthcare"
             className="rounded-lg shadow-lg"
+            width={800}
+            height={800}
           />
         </div>
       </div>

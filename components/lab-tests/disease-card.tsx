@@ -40,24 +40,19 @@ export function DiseaseCard({
         <CardTitle className="text-xl">{disease.name}</CardTitle>
         <CardDescription>{disease.description}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className=" flex flex-col items-center space-y-2 font-medium text-sm">
         {result !== undefined ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="flex flex-col items-center space-y-2"
           >
             <DonutChart value={result} onSegmentClick={setSelectedSegment} />
             <p className="text-sm text-muted-foreground">
               Risk Assessment Score
             </p>
             {selectedSegment && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-sm font-medium"
-              >
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 {selectedSegment === "risk"
                   ? "Risk factors detected"
                   : "Healthy indicators"}
@@ -67,7 +62,6 @@ export function DiseaseCard({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className="text-sm text-center mt-2"
             >
               {getRecommendation(result)}
             </motion.p>
